@@ -1,6 +1,6 @@
 {
   "snapshot_date": "2026-08-18",
-  "evidence_class": "local controlled mechanism artifact",
+  "evidence_class": "controlled mechanism + public GitHub CI evidence",
   "checks": {
     "compileall": "PASS",
     "editable_install_no_build_isolation": "PASS",
@@ -11,14 +11,19 @@
     "cross_document_review_replay_blocked": "PASS",
     "obvious_secret_scan": "PASS",
     "live_nutrient_dws": "BLOCKED_NETWORK_DNS",
-    "public_github_ci": "BLOCKED_PENDING_SOURCE_PUBLICATION",
+    "public_github_repo": "PASS",
+    "public_github_ci": "PASS",
     "public_deployment": "BLOCKED",
     "ruff": "UNRUN",
     "mypy": "UNRUN",
     "bandit": "UNRUN",
     "pip_audit": "UNRUN",
-    "pytest_20": "PASS",
-    "public_github_repo": "PASS"
+    "pytest_20": "PASS"
+  },
+  "public_ci_evidence": {
+    "workflow_run_id": 32179703793,
+    "tested_branch_head": "161c62559c6737bacc375e4cd952c2f333f1dec2",
+    "conclusion": "success"
   },
   "retained_result_sha256": {
     "controlled_demo": "1980b3d59b3bec5f8cfaa4521e15dbc6dfc791e85d6016a6b749077b622ca0a4",
