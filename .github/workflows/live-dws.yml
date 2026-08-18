@@ -1,0 +1,59 @@
+name: live-nutrient-dws
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-dws-acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NUTRIENT_API_KEY: ${{ secrets.NUTRIENT_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require server-side Nutrient secret
+        shell: bash
+        run: |
+          if [ -z "$NUTRIENT_API_KEY" ]; then
+            echo "NUTRIENT_API_KEY repository secret is required for this manual acceptance workflow." >&2
+            exit 2
+          fi
+      - name: Install ReleaseProof
+        run: python -m pip install -e '.[dev]'
+      - name: Generate non-sensitive synthetic packet PDFs
+        run: python scripts/generate_synthetic_trade_pdfs.py
+      - name: Run no-fallback live Nutrient DWS probe
+        shell: bash
+        run: |
+          PYTHONPATH=src python scripts/run_live_dws_probe.py \
+            --invoice live-probe-input/invoice.pdf \
+            --shipping live-probe-input/shipping.pdf \
+            --certificate live-probe-input/certificate.pdf \
+            > live-dws-output.json
+      - name: Verify live result truth marker
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('live-dws-output.json')
+          data=json.loads(p.read_text())
+          assert data.get('execution') == 'LIVE_NUTRIENT_DWS'
+          assert len(data.get('documents', [])) == 3
+          assert data.get('manifest_sha256')
+          print('LIVE_NUTRIENT_DWS acceptance output validated')
+          PY
+      - name: Upload sanitized acceptance evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-nutrient-dws-acceptance
+          path: |
+            live-dws-output.json
+            live-probe-input/*.pdf
+          if-no-files-found: error
+          retention-days: 14

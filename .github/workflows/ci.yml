@@ -16,3 +16,16 @@ jobs:
       - run: python -m pip install -e '.[dev]'
       - run: python -m pytest -q
       - run: python -m compileall -q src tests scripts
+      - name: Validate synthetic live-probe PDFs
+        run: |
+          python scripts/generate_synthetic_trade_pdfs.py
+          python - <<'PY'
+          from pathlib import Path
+          files=sorted(Path('live-probe-input').glob('*.pdf'))
+          assert len(files)==3
+          for path in files:
+              data=path.read_bytes()
+              assert data.startswith(b'%PDF-')
+              assert data.rstrip().endswith(b'%%EOF')
+          print('synthetic live-probe packet validated')
+          PY
