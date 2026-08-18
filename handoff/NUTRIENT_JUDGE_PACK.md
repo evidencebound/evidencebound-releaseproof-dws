@@ -10,6 +10,7 @@
 
 ## Implemented truth
 
+- dedicated public competition repository exists;
 - three-document trade packet workflow;
 - Nutrient hosted Processor `/build` transport;
 - strict `json-content` / key-value source-grounding normalizer;
@@ -17,15 +18,15 @@
 - scoped human review binding;
 - full packet/receipt/decision release manifest;
 - historical manifest invalidation after source change;
-- Differential Reverification that selectively preserves unchanged review evidence;
+- Differential Reverification selectively preserves unchanged review evidence;
 - controlled evaluation, tests and local judge UI;
-- no-key/no-schema fallback behavior fails closed.
+- no-key/no-schema fallback behavior fails closed;
+- public GitHub Actions matrix passes after resolving current Starlette TestClient dependency drift.
 
 ## Not yet verified
 
-- real DWS API execution on the competition account;
+- successful real DWS API response on three representative PDFs;
 - DWS Viewer integration;
-- public repository CI;
 - public judge deployment;
 - real user/customer metrics.
 
@@ -41,21 +42,21 @@ This is mechanism evidence only.
 
 ## Live DWS acceptance gate
 
-Required before sponsor submission claims DWS PASS:
+A user-controlled DWS key was supplied transiently on 2026-08-18, but the current sandbox could not resolve `api.nutrient.io`; no HTTP response was obtained and the key was not persisted. Before sponsor submission claims DWS PASS:
 
-1. provision a user-controlled `NUTRIENT_API_KEY` server-side;
+1. inject the credential only as server-side `NUTRIENT_API_KEY` in a networked runtime/secret store;
 2. use three non-sensitive representative PDFs;
 3. run `scripts/run_live_dws_probe.py` with invoice/shipping/certificate;
 4. verify every required field has DWS page/bbox/confidence grounding;
-5. retain the DWS response hashes and current manifest;
-6. modify/revise a real packet document, reprocess it through DWS and verify Differential Reverification behavior;
-7. run full tests and public judge smoke from exact pushed commit.
+5. retain sanitized DWS response hashes and the current manifest;
+6. revise a real packet document, reprocess through DWS and verify Differential Reverification behavior;
+7. run public judge smoke from the exact deployed commit.
 
-No fixture may substitute for any of these live steps.
+No fixture may substitute for these live steps.
 
 ## Prize narrative
 
-**Progress:** working control kernel, DWS transport/normalizer, review/reverification and judge UI.
+**Progress:** public source, passing public CI, working control kernel, DWS transport/normalizer, review/reverification and judge UI.
 
 **Concept:** avoids both stale approval reuse and blanket re-review after document revision.
 
@@ -67,20 +68,26 @@ No fixture may substitute for any of these live steps.
 
 Version-aware approvals, provenance graphs and dependency invalidation already exist. ReleaseProof does not claim to invent them. The competition contribution is the concrete DWS-grounded, evidence-scoped Differential Reverification pipeline and release predicate. No patent novelty claim is made.
 
-## Exact external blockers / owner actions
+## Remaining external blockers / owner actions
 
-### Nutrient credential
-Owner action: provision a project/user DWS API key through the intended Nutrient account and inject it only as `NUTRIENT_API_KEY` into a networked runtime/CI secret store.
+### Live Nutrient execution — BLOCKED by current execution network
+Run the no-fallback live probe in a networked environment with the server-side key. Do not commit or expose the credential.
 
-### Public repository
-Current GitHub connector cannot create a new repo. Owner action: create a dedicated public `releaseproof`-style repository, then push this source tree as initial history.
+### Public deployment — BLOCKED
+After live DWS PASS, deploy a server-side service where the API key remains secret and smoke-test the exact deployed commit.
 
-### Public deployment
-After live DWS PASS, deploy a server-side service where the API key remains secret. Do not expose credential handling to browser code.
+### DWS Viewer — OPTIONAL / UNRUN
+Evaluate only if it materially strengthens the human review experience without displacing Processor as the core document operation.
+
+## Public CI evidence
+
+- PR CI head: `161c62559c6737bacc375e4cd952c2f333f1dec2`
+- GitHub Actions run: `32179703793`
+- conclusion: `success`
 
 ## Capture targets
 
-- hero showing `LIVE NUTRIENT DWS` truth state;
+- hero showing the truthful live DWS state;
 - DWS `/build` request/response receipt (sanitized, no credential);
 - field citation page/bbox/confidence;
 - mismatch/low-confidence review surface;
