@@ -1,0 +1,17 @@
+flowchart TD
+    D[Invoice + Shipping + Certificate] --> N[Nutrient DWS Processor /build]
+    N --> J[json-content + keyValuePairs]
+    J --> E[Source-grounded evidence: page + bbox + confidence + value]
+    E --> F[Fail-closed normalizer]
+    F --> R[Deterministic reconciliation]
+    R --> H[Human review binds exact finding/evidence slice]
+    H --> M[Current Release Manifest]
+    M --> C{Packet revision?}
+    C -->|No| V[VERIFIED / REVIEW_REQUIRED / BLOCKED]
+    C -->|Yes| N
+    F --> DR[Differential Reverification]
+    DR --> P{Current finding binding identical?}
+    P -->|Yes| K[Preserve scoped review into NEW manifest]
+    P -->|No| I[Invalidate prior review]
+    K --> V
+    I --> V

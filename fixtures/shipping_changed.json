@@ -1,0 +1,56 @@
+{
+  "fields": [
+    {
+      "field": "shipment_id",
+      "value": "SHP-260818-42",
+      "label": "Shipment",
+      "confidence": 0.99,
+      "page": 1,
+      "bounds": [
+        40,
+        50,
+        250,
+        72
+      ]
+    },
+    {
+      "field": "quantity",
+      "value": "105",
+      "label": "Quantity",
+      "confidence": 0.99,
+      "page": 1,
+      "bounds": [
+        40,
+        80,
+        180,
+        102
+      ]
+    },
+    {
+      "field": "currency",
+      "value": "USD",
+      "label": "Currency",
+      "confidence": 0.99,
+      "page": 1,
+      "bounds": [
+        40,
+        110,
+        180,
+        132
+      ]
+    },
+    {
+      "field": "declared_value",
+      "value": "25000",
+      "label": "Declared Value",
+      "confidence": 0.99,
+      "page": 1,
+      "bounds": [
+        40,
+        140,
+        240,
+        162
+      ]
+    }
+  ]
+}

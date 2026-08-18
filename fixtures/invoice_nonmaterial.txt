@@ -1,0 +1,6 @@
+COMMERCIAL INVOICE
+Shipment: SHP-260818-42
+Quantity: 100
+Currency: USD
+Declared Value: 25000
+Internal routing note updated after review; material extracted fields unchanged.

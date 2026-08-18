@@ -1,0 +1,5 @@
+BILL OF LADING - REVISED
+Shipment: SHP-260818-42
+Quantity: 105
+Currency: USD
+Declared Value: 25000

@@ -1,0 +1,5 @@
+ORIGIN CERTIFICATE
+Shipment: SHP-260818-42
+Quantity: 100
+Currency: USD
+Declared Value: 25000

@@ -1,0 +1,6 @@
+COMMERCIAL INVOICE - RESCAN
+Shipment: SHP-260818-42
+Quantity: 100
+Currency: USD
+Declared Value: 25000
+Scan quality degraded on quantity region.

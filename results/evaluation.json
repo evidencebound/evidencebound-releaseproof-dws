@@ -1,0 +1,11 @@
+{
+  "blanket_review_reuse_after_nonmaterial_file_change": 0,
+  "changed_document_count_nonmaterial": 1,
+  "differential_review_reuse_after_nonmaterial_file_change": 1,
+  "differential_review_reuse_fraction_after_nonmaterial_file_change": 1.0,
+  "invalidated_reviews_after_reviewed_slice_change": 1,
+  "nonmaterial_current_state": "VERIFIED",
+  "preserved_reviews_after_reviewed_slice_change": 0,
+  "prior_human_reviews": 1,
+  "reviewed_slice_change_current_state": "REVIEW_REQUIRED"
+}

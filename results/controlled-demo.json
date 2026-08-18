@@ -1,0 +1,31 @@
+{
+  "after_source_change": "INVALIDATED",
+  "findings": [
+    {
+      "citations": [
+        {
+          "bounds": [40.0,80.0,180.0,102.0],
+          "confidence": 0.88,
+          "document_id": "invoice",
+          "document_sha256": "2494c95f2d114606234ed97554750bed2ce98dddf8a34cbcdc6c79af1bde9049",
+          "evidence_slice_sha256": "dfe03fcb9333d331a2335bb6d39246ef0319c614ea62357994e3a94ed53ca03f",
+          "label": "Quantity",
+          "page": 1
+        }
+      ],
+      "field": "quantity",
+      "finding_id": "dacd5794083bc7dc",
+      "message": "invoice.quantity confidence=0.880 below 0.92",
+      "rule_id": "LOW_CONFIDENCE",
+      "severity": "medium",
+      "state": "REVIEW_REQUIRED"
+    }
+  ],
+  "initial_state": "REVIEW_REQUIRED",
+  "manifest_sha256": "69b5a11c06b7c5961507de76bd13de2dfd3c22dc5c43b9c3300784c6df39537f",
+  "material_revision": {"changed_documents":["shipping"],"current_state":"REVIEW_REQUIRED","invalidated_review_ids":[],"preserved_review_ids":["dacd5794083bc7dc"]},
+  "nonmaterial_revision": {"changed_documents":["invoice"],"current_state":"VERIFIED","invalidated_review_ids":[],"preserved_review_ids":["dacd5794083bc7dc"]},
+  "reviewed_slice_revision": {"changed_documents":["invoice"],"current_state":"REVIEW_REQUIRED","invalidated_review_ids":["dacd5794083bc7dc"],"preserved_review_ids":[]},
+  "reviewed_state": "VERIFIED",
+  "verification": "VERIFIED"
+}

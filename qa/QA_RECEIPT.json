@@ -1,0 +1,32 @@
+{
+  "snapshot_date": "2026-08-18",
+  "evidence_class": "local controlled mechanism artifact",
+  "checks": {
+    "compileall": "PASS",
+    "editable_install_no_build_isolation": "PASS",
+    "controlled_demo_reproduction_byte_for_byte": "PASS",
+    "controlled_evaluation_reproduction_byte_for_byte": "PASS",
+    "local_http_judge_path": "PASS",
+    "missing_nutrient_key_fail_closed": "PASS",
+    "cross_document_review_replay_blocked": "PASS",
+    "obvious_secret_scan": "PASS",
+    "live_nutrient_dws": "BLOCKED_NETWORK_DNS",
+    "public_github_ci": "BLOCKED_PENDING_SOURCE_PUBLICATION",
+    "public_deployment": "BLOCKED",
+    "ruff": "UNRUN",
+    "mypy": "UNRUN",
+    "bandit": "UNRUN",
+    "pip_audit": "UNRUN",
+    "pytest_20": "PASS",
+    "public_github_repo": "PASS"
+  },
+  "retained_result_sha256": {
+    "controlled_demo": "1980b3d59b3bec5f8cfaa4521e15dbc6dfc791e85d6016a6b749077b622ca0a4",
+    "evaluation": "683ca81f3146c9b30abff585f7f0eec409201fb98bb70a82ea29932bba15188f"
+  },
+  "limits": [
+    "Controlled fixtures are not live DWS output.",
+    "Real DWS response compatibility remains a mandatory live gate.",
+    "No real reviewer-time savings are claimed."
+  ]
+}

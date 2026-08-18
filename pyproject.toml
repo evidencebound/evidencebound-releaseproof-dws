@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "releaseproof-dws"
+version = "0.1.0"
+description = "Decision-bound trade-document release manifests with Nutrient DWS integration."
+requires-python = ">=3.11"
+license = {text = "Apache-2.0"}
+dependencies = ["fastapi>=0.110", "uvicorn>=0.27", "requests>=2.31"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+addopts = "-q"
