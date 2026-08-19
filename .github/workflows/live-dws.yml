@@ -45,8 +45,17 @@ jobs:
             --shipping live-probe-input/shipping.pdf \
             --certificate live-probe-input/certificate.pdf \
             > live-dws-output.json
+      - id: shape
+        name: Inspect live DWS schema after probe failure
+        if: ${{ failure() && steps.probe.outcome == 'failure' }}
+        continue-on-error: true
+        run: |
+          PYTHONPATH=src python scripts/inspect_live_dws_shape.py \
+            --document live-probe-input/invoice.pdf \
+            --output live-dws-shape.json
       - id: verify
         name: Verify live result truth marker
+        if: ${{ steps.probe.outcome == 'success' }}
         run: |
           python - <<'PY'
           import json
@@ -69,6 +78,15 @@ jobs:
             live-probe-input/*.pdf
           if-no-files-found: error
           retention-days: 14
+      - id: diagnostic_artifact
+        name: Upload sanitized schema diagnostic
+        if: ${{ steps.shape.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-nutrient-dws-schema
+          path: live-dws-shape.json
+          if-no-files-found: error
+          retention-days: 14
       - name: Publish sanitized run receipt
         if: ${{ always() }}
         shell: bash
@@ -83,8 +101,10 @@ jobs:
           INSTALL_OUTCOME: ${{ steps.install.outcome }}
           GENERATE_OUTCOME: ${{ steps.generate.outcome }}
           PROBE_OUTCOME: ${{ steps.probe.outcome }}
+          SHAPE_OUTCOME: ${{ steps.shape.outcome }}
           VERIFY_OUTCOME: ${{ steps.verify.outcome }}
           ARTIFACT_OUTCOME: ${{ steps.artifact.outcome }}
+          DIAGNOSTIC_ARTIFACT_OUTCOME: ${{ steps.diagnostic_artifact.outcome }}
         run: |
           cat > live-dws-receipt.md <<EOF
           ## Live Nutrient DWS acceptance receipt
@@ -98,8 +118,10 @@ jobs:
           - install: ${INSTALL_OUTCOME}
           - synthetic_pdf_generation: ${GENERATE_OUTCOME}
           - live_dws_probe: ${PROBE_OUTCOME}
+          - schema_diagnostic: ${SHAPE_OUTCOME}
           - truth_marker_verification: ${VERIFY_OUTCOME}
           - artifact_upload: ${ARTIFACT_OUTCOME}
+          - diagnostic_artifact_upload: ${DIAGNOSTIC_ARTIFACT_OUTCOME}
           EOF
           if [ -s live-dws-output.json ]; then
             python - <<'PY' >> live-dws-receipt.md
@@ -118,5 +140,5 @@ jobs:
                   print(f"- document_receipt: {doc.get('document_id','UNKNOWN')} / {doc.get('processor_receipt_sha256','UNKNOWN')}")
           PY
           fi
-          printf '\nNo API key, Authorization header, or private document content is included in this receipt.\n' >> live-dws-receipt.md
+          printf '\nNo API key, Authorization header, extracted document text, or private document content is included in this receipt.\n' >> live-dws-receipt.md
           gh issue comment 3 --repo "${RUN_REPOSITORY}" --body-file live-dws-receipt.md
