@@ -54,13 +54,15 @@ The repository includes `.github/workflows/live-dws.yml`. It:
 - reads `NUTRIENT_API_KEY` only from GitHub Actions secrets;
 - generates three non-sensitive synthetic trade PDFs at runtime;
 - invokes the hosted DWS `/build` path with no fixture fallback;
+- verifies page, bbox, confidence and evidence-slice grounding;
 - requires all three documents and a release manifest before the `LIVE_NUTRIENT_DWS` truth marker can pass;
+- contains a quota-aware hosted Differential Reverification phase that reuses accepted base evidence and sends only the revised invoice as the fourth hosted call;
 - publishes a sanitized run receipt to issue #3;
 - never publishes the API key, Authorization header, or extracted document text.
 
 A schema-only diagnostic is available for provider drift. It emits object keys, list lengths and scalar types only.
 
-## Current live evidence
+## Accepted live evidence
 
 Observed on 2026-08-19:
 
@@ -69,6 +71,24 @@ Observed on 2026-08-19:
 - hosted `/build` returned parseable JSON: **PASS**;
 - first strict live normalization: **FAIL** because the live page omitted documented `pageIndex`;
 - schema-only diagnostic: **PASS** and confirmed `pages[] -> {plainText, keyValuePairs}` with grounded key/value objects;
-- compatibility fix: implemented and awaiting the next live acceptance run.
+- compatibility regression CI: **PASS** on Python 3.11 / 3.12 / 3.13;
+- post-fix three-document hosted acceptance: **PASS**;
+- field-level source-grounding assertions: **PASS**;
+- current manifest generation: **PASS**;
+- live release state: `REVIEW_REQUIRED` after a real cross-document extraction disagreement.
 
-Until the post-fix three-document run completes, overall `live_nutrient_dws` remains **FAIL**, not PASS.
+Canonical core run: `32215337912`. Artifact `9352133498` has digest `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`.
+
+## Differential Reverification live boundary
+
+The controlled mechanism already verifies both selective preservation and invalidation behavior. A hosted non-material-revision harness was added to test whether the same evidence binding remains stable across repeated real DWS extraction.
+
+The first live harness redundantly reprocessed the base packet and reached HTTP `402` before the revised-document result could be produced. It was optimized to four total hosted calls, and that quota-aware harness passed public CI. On the next hosted run (`32215515505`), the provider/account returned HTTP `402` on the **first** `/build`; the schema diagnostic request also returned `402`.
+
+No additional live DWS calls were made after that point. Correct status:
+
+- `live_nutrient_dws_core`: **PASS**;
+- deterministic Differential Reverification: **PASS**;
+- hosted Differential Reverification: **BLOCKED_QUOTA_402**.
+
+See `docs/live-dws-evidence.md` for the evidence ledger.

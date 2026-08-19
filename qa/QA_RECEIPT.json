@@ -14,24 +14,42 @@
     "nutrient_hosted_build_network_path": "PASS",
     "nutrient_live_json_response": "PASS",
     "nutrient_live_schema_diagnostic": "PASS",
-    "live_nutrient_dws": "FAIL_PENDING_POST_FIX_RERUN",
+    "page_provenance_regression_tests": "PASS",
+    "pytest_27": "PASS",
+    "live_nutrient_dws_core": "PASS",
+    "live_differential_reverification": "BLOCKED_QUOTA_402",
     "public_github_repo": "PASS",
     "public_github_ci": "PASS",
     "public_deployment": "BLOCKED",
     "ruff": "UNRUN",
     "mypy": "UNRUN",
     "bandit": "UNRUN",
-    "pip_audit": "UNRUN",
-    "pytest_20_baseline": "PASS",
-    "page_provenance_regression_tests": "PENDING_PUBLIC_CI"
+    "pip_audit": "UNRUN"
   },
   "live_dws_evidence": {
     "strict_probe_run_id": 32214729108,
     "schema_diagnostic_run_id": 32214840848,
-    "observed_failure": "DWS Processor pageIndex missing or invalid",
+    "canonical_core_run_id": 32215337912,
+    "canonical_core_commit_sha": "d885ed31ebb8cc9449c450b0334c630c3b11f656",
+    "canonical_core_artifact_id": 9352133498,
+    "canonical_core_artifact_digest": "sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e",
+    "canonical_core_manifest_sha256": "a5716cc3f5580a6dde1e21d4199675bb65f2b46e92b7b65a334f05a1d57663cc",
+    "document_receipts": {
+      "invoice": "f7f472032528a8b874e3de2d48344d9274cde6a448f29530e8ac0f12acc8e7c6",
+      "shipping": "cef24668bba04f610450eb87fdf873bcdcf45b1e6a9b226865857604f608c135",
+      "certificate": "8d0b635918e4d42a2f85584a51b6ea52c0f36222b73322242d761317e5d3c4ab"
+    },
     "observed_page_keys": ["keyValuePairs", "plainText"],
-    "observed_pair_grounding": ["confidence", "key.content", "key.bbox", "value.content", "value.bbox", "value.dataType"],
-    "compatibility_rule": "missing pageIndex uses ordered pages[] position with explicit ordered-page-position provenance; malformed present pageIndex fails closed"
+    "compatibility_rule": "missing pageIndex uses ordered pages[] position with explicit ordered-page-position provenance; malformed present pageIndex fails closed",
+    "live_release_state": "REVIEW_REQUIRED",
+    "live_review_trigger": "CROSS_DOCUMENT_MISMATCH after hosted extraction produced divergent Shipment ID strings",
+    "first_differential_attempt_run_id": 32215337912,
+    "first_differential_attempt": "BLOCKED_HTTP_402_AFTER_REDUNDANT_HOSTED_CALLS",
+    "quota_aware_harness_public_ci_run_id": 32215419913,
+    "quota_aware_harness_public_ci": "PASS",
+    "quota_aware_live_run_id": 32215515505,
+    "quota_aware_live_result": "BLOCKED_HTTP_402_ON_FIRST_BUILD",
+    "further_live_calls": "STOPPED_TO_AVOID_QUOTA_SPEND"
   },
   "retained_result_sha256": {
     "controlled_demo": "1980b3d59b3bec5f8cfaa4521e15dbc6dfc791e85d6016a6b749077b622ca0a4",
@@ -39,7 +57,8 @@
   },
   "limits": [
     "Controlled fixtures are not live DWS output.",
-    "The post-drift compatibility fix is not accepted until a new three-document hosted DWS run passes.",
+    "The hosted core DWS integration passed; the hosted Differential Reverification rerun did not execute because the Nutrient account began returning HTTP 402.",
+    "The synthetic acceptance-harness review is not a real human-review metric.",
     "Ordered page position is used only when the provider omits pageIndex and is explicitly provenance-labelled.",
     "No real reviewer-time savings are claimed."
   ]
