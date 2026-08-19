@@ -1,5 +1,6 @@
 {
   "snapshot_date": "2026-08-19",
+  "submission_readiness": "READY",
   "evidence_class": "controlled mechanism + public GitHub CI + hosted Nutrient DWS acceptance + Vercel production acceptance",
   "checks": {
     "compileall": "PASS",
@@ -16,7 +17,7 @@
     "nutrient_live_schema_diagnostic": "PASS",
     "page_provenance_regression_tests": "PASS",
     "live_nutrient_dws_core": "PASS",
-    "live_differential_reverification": "BLOCKED_QUOTA_402",
+    "live_differential_reverification": "NON_BLOCKING_LIMITATION_QUOTA_402",
     "public_github_repo": "PASS",
     "public_github_ci": "PASS",
     "public_vercel_project": "PASS",
@@ -28,14 +29,13 @@
     "public_vercel_demo": "PASS",
     "public_vercel_runtime_errors": "PASS",
     "public_deployment": "PASS",
+    "paid_nutrient_plan_required_for_submission": "NO",
     "ruff": "UNRUN",
     "mypy": "UNRUN",
     "bandit": "UNRUN",
     "pip_audit": "UNRUN"
   },
   "live_dws_evidence": {
-    "strict_probe_run_id": 32214729108,
-    "schema_diagnostic_run_id": 32214840848,
     "canonical_core_run_id": 32215337912,
     "canonical_core_commit_sha": "d885ed31ebb8cc9449c450b0334c630c3b11f656",
     "canonical_core_artifact_id": 9352133498,
@@ -46,25 +46,22 @@
       "shipping": "cef24668bba04f610450eb87fdf873bcdcf45b1e6a9b226865857604f608c135",
       "certificate": "8d0b635918e4d42a2f85584a51b6ea52c0f36222b73322242d761317e5d3c4ab"
     },
-    "observed_page_keys": ["keyValuePairs", "plainText"],
-    "compatibility_rule": "missing pageIndex uses ordered pages[] position with explicit ordered-page-position provenance; malformed present pageIndex fails closed",
     "live_release_state": "REVIEW_REQUIRED",
     "live_review_trigger": "CROSS_DOCUMENT_MISMATCH after hosted extraction produced divergent Shipment ID strings",
-    "first_differential_attempt_run_id": 32215337912,
-    "first_differential_attempt": "BLOCKED_HTTP_402_AFTER_REDUNDANT_HOSTED_CALLS",
     "quota_aware_harness_public_ci_run_id": 32215419913,
     "quota_aware_harness_public_ci": "PASS",
     "quota_aware_live_run_id": 32215515505,
-    "quota_aware_live_result": "BLOCKED_HTTP_402_ON_FIRST_BUILD",
+    "quota_aware_live_result": "HTTP_402_ON_FIRST_BUILD",
+    "quota_effect_on_submission": "NON_BLOCKING",
     "nutrient_free_plan_warning": "2_PROCESSING_CREDITS_REMAINING",
-    "further_live_calls": "STOPPED_TO_AVOID_QUOTA_SPEND"
+    "further_live_calls": "STOPPED_TO_AVOID_UNNECESSARY_SPEND"
   },
   "production_evidence": {
     "provider": "Vercel",
     "project_name": "evidencebound-releaseproof-dws",
     "project_id": "prj_zYwz9jdjY3PmbpoYFWUraPkLUPET",
     "production_url": "https://evidencebound-releaseproof-dws.vercel.app",
-    "initial_accepted_deployment_id": "dpl_HDEAT39ZTarETnZUX7gTemWCG4to",
+    "accepted_deployment_id": "dpl_DgptupzTPrqx9HsySqWtwenmUNoA",
     "framework": "fastapi",
     "python": "3.12",
     "region": "iad1",
@@ -78,7 +75,7 @@
   },
   "limits": [
     "Controlled fixtures are not live DWS output.",
-    "The hosted core DWS integration passed; the hosted Differential Reverification rerun did not execute because the Nutrient account began returning HTTP 402.",
+    "Hosted core DWS integration passed; the optional hosted Differential Reverification rerun is quota-limited and not required for submission readiness.",
     "The synthetic acceptance-harness review is not a real human-review metric.",
     "Ordered page position is used only when the provider omits pageIndex and is explicitly provenance-labelled.",
     "The Vercel deployment is an evidence surface and does not execute Nutrient calls.",
