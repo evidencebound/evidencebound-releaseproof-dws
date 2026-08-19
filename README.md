@@ -7,8 +7,18 @@
 ```bash
 python -m pip install -e '.[dev]' --no-build-isolation
 PYTHONPATH=src pytest
-PYTHONPATH=src uvicorn releaseproof.api:app --host 127.0.0.1 --port 8080
+PYTHONPATH=src uvicorn releaseproof.public_app:app --host 127.0.0.1 --port 8080
 ```
+
+The public judge app exposes:
+
+- `/` — truthful judge surface separating hosted and controlled evidence;
+- `/health` — machine-readable PASS/BLOCKED states;
+- `/api/live-evidence` — sanitized immutable receipt for the accepted hosted DWS run;
+- `/api/demo` — deterministic review / revision / invalidation mechanism;
+- `/api/evaluation` — controlled Differential Reverification metrics.
+
+It does **not** call Nutrient from the browser or at page load. Hosted evidence is retained from the accepted GitHub Actions run so public judges cannot consume the exhausted account quota.
 
 The deterministic path demonstrates:
 
@@ -47,14 +57,26 @@ A hosted Differential Reverification acceptance harness was also implemented. It
 
 No further DWS calls should be made until account quota/credits are restored.
 
+## Vercel deployment readiness
+
+The repo declares the official Python runtime entrypoint in `pyproject.toml`:
+
+```toml
+[tool.vercel]
+entrypoint = "releaseproof.public_app:app"
+```
+
+This allows a dedicated Vercel project to deploy the public judge surface without embedding the Nutrient credential. The currently connected Vercel account contains other EvidenceBound projects but no dedicated ReleaseProof project; the available deployment connector cannot safely select/create the target project, so those existing projects are intentionally not modified.
+
 ## Public verification
 
 - public repository: **PASS**;
 - Python 3.11 / 3.12 / 3.13 GitHub Actions: **PASS**;
-- current deterministic suite: **27 tests PASS**;
+- deterministic suite before public-app tests: **27 tests PASS**;
+- public judge truth-state tests: included in the current deployment-readiness branch;
 - compile gate: **PASS**;
 - synthetic non-material PDF revision generator: **PASS**;
 - hosted Nutrient core DWS acceptance: **PASS**;
-- public judge deployment: **BLOCKED / UNVERIFIED**.
+- public judge deployment: **BLOCKED_PROJECT_CREATION / UNVERIFIED** until a dedicated Vercel project is created/imported.
 
 See `docs/live-dws-evidence.md`, `docs/claims-ledger.md`, `qa/QA_RECEIPT.json`, and `handoff/NUTRIENT_JUDGE_PACK.md`.
