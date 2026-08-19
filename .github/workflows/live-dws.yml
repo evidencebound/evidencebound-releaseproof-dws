@@ -2,9 +2,14 @@ name: live-nutrient-dws
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'qa/LIVE_DWS_TRIGGER.md'
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   live-dws-acceptance:
@@ -17,18 +22,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Require server-side Nutrient secret
+      - id: secret
+        name: Require server-side Nutrient secret
         shell: bash
         run: |
           if [ -z "$NUTRIENT_API_KEY" ]; then
-            echo "NUTRIENT_API_KEY repository secret is required for this manual acceptance workflow." >&2
+            echo "NUTRIENT_API_KEY repository secret is required for live acceptance." >&2
             exit 2
           fi
-      - name: Install ReleaseProof
+      - id: install
+        name: Install ReleaseProof
         run: python -m pip install -e '.[dev]'
-      - name: Generate non-sensitive synthetic packet PDFs
+      - id: generate
+        name: Generate non-sensitive synthetic packet PDFs
         run: python scripts/generate_synthetic_trade_pdfs.py
-      - name: Run no-fallback live Nutrient DWS probe
+      - id: probe
+        name: Run no-fallback live Nutrient DWS probe
         shell: bash
         run: |
           PYTHONPATH=src python scripts/run_live_dws_probe.py \
@@ -36,7 +45,8 @@ jobs:
             --shipping live-probe-input/shipping.pdf \
             --certificate live-probe-input/certificate.pdf \
             > live-dws-output.json
-      - name: Verify live result truth marker
+      - id: verify
+        name: Verify live result truth marker
         run: |
           python - <<'PY'
           import json
@@ -48,7 +58,9 @@ jobs:
           assert data.get('manifest_sha256')
           print('LIVE_NUTRIENT_DWS acceptance output validated')
           PY
-      - name: Upload sanitized acceptance evidence
+      - id: artifact
+        name: Upload sanitized acceptance evidence
+        if: ${{ steps.verify.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: live-nutrient-dws-acceptance
@@ -57,3 +69,49 @@ jobs:
             live-probe-input/*.pdf
           if-no-files-found: error
           retention-days: 14
+      - name: Publish sanitized run receipt
+        if: ${{ always() }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SECRET_OUTCOME: ${{ steps.secret.outcome }}
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          GENERATE_OUTCOME: ${{ steps.generate.outcome }}
+          PROBE_OUTCOME: ${{ steps.probe.outcome }}
+          VERIFY_OUTCOME: ${{ steps.verify.outcome }}
+          ARTIFACT_OUTCOME: ${{ steps.artifact.outcome }}
+        run: |
+          cat > live-dws-receipt.md <<EOF
+          ## Live Nutrient DWS acceptance receipt
+
+          - run_id: `${{ github.run_id }}`
+          - run_number: `${{ github.run_number }}`
+          - run_url: `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+          - commit_sha: `${{ github.sha }}`
+          - event: `${{ github.event_name }}`
+          - secret_gate: `${SECRET_OUTCOME}`
+          - install: `${INSTALL_OUTCOME}`
+          - synthetic_pdf_generation: `${GENERATE_OUTCOME}`
+          - live_dws_probe: `${PROBE_OUTCOME}`
+          - truth_marker_verification: `${VERIFY_OUTCOME}`
+          - artifact_upload: `${ARTIFACT_OUTCOME}`
+          EOF
+          if [ -s live-dws-output.json ]; then
+            python - <<'PY' >> live-dws-receipt.md
+          import json
+          from pathlib import Path
+          try:
+              data=json.loads(Path('live-dws-output.json').read_text())
+          except Exception:
+              print('- sanitized_output: `UNAVAILABLE_OR_INVALID_JSON`')
+          else:
+              print(f"- execution: `{data.get('execution', 'UNKNOWN')}`")
+              print(f"- release_state: `{data.get('release_state', 'UNKNOWN')}`")
+              print(f"- document_count: `{len(data.get('documents', []))}`")
+              print(f"- manifest_sha256: `{data.get('manifest_sha256', 'UNKNOWN')}`")
+              for doc in data.get('documents', []):
+                  print(f"- document_receipt: `{doc.get('document_id','UNKNOWN')}` / `{doc.get('processor_receipt_sha256','UNKNOWN')}`")
+          PY
+          fi
+          printf '\nNo API key, Authorization header, or private document content is included in this receipt.\n' >> live-dws-receipt.md
+          gh issue comment 3 --repo "${{ github.repository }}" --body-file live-dws-receipt.md
