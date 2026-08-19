@@ -7,4 +7,4 @@ This file exists only to provide an auditable trusted-main trigger for the no-fa
 - secret source: repository Actions secret only
 - private documents: none; synthetic packet generated at runtime
 - trigger prepared: 2026-08-19
-- trigger sequence: 5
+- trigger sequence: 6
