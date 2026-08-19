@@ -74,6 +74,11 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_SHA: ${{ github.sha }}
+          RUN_EVENT: ${{ github.event_name }}
+          RUN_REPOSITORY: ${{ github.repository }}
           SECRET_OUTCOME: ${{ steps.secret.outcome }}
           INSTALL_OUTCOME: ${{ steps.install.outcome }}
           GENERATE_OUTCOME: ${{ steps.generate.outcome }}
@@ -84,17 +89,17 @@ jobs:
           cat > live-dws-receipt.md <<EOF
           ## Live Nutrient DWS acceptance receipt
 
-          - run_id: `${{ github.run_id }}`
-          - run_number: `${{ github.run_number }}`
-          - run_url: `https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}`
-          - commit_sha: `${{ github.sha }}`
-          - event: `${{ github.event_name }}`
-          - secret_gate: `${SECRET_OUTCOME}`
-          - install: `${INSTALL_OUTCOME}`
-          - synthetic_pdf_generation: `${GENERATE_OUTCOME}`
-          - live_dws_probe: `${PROBE_OUTCOME}`
-          - truth_marker_verification: `${VERIFY_OUTCOME}`
-          - artifact_upload: `${ARTIFACT_OUTCOME}`
+          - run_id: ${RUN_ID}
+          - run_number: ${RUN_NUMBER}
+          - run_url: https://github.com/${RUN_REPOSITORY}/actions/runs/${RUN_ID}
+          - commit_sha: ${RUN_SHA}
+          - event: ${RUN_EVENT}
+          - secret_gate: ${SECRET_OUTCOME}
+          - install: ${INSTALL_OUTCOME}
+          - synthetic_pdf_generation: ${GENERATE_OUTCOME}
+          - live_dws_probe: ${PROBE_OUTCOME}
+          - truth_marker_verification: ${VERIFY_OUTCOME}
+          - artifact_upload: ${ARTIFACT_OUTCOME}
           EOF
           if [ -s live-dws-output.json ]; then
             python - <<'PY' >> live-dws-receipt.md
@@ -103,15 +108,15 @@ jobs:
           try:
               data=json.loads(Path('live-dws-output.json').read_text())
           except Exception:
-              print('- sanitized_output: `UNAVAILABLE_OR_INVALID_JSON`')
+              print('- sanitized_output: UNAVAILABLE_OR_INVALID_JSON')
           else:
-              print(f"- execution: `{data.get('execution', 'UNKNOWN')}`")
-              print(f"- release_state: `{data.get('release_state', 'UNKNOWN')}`")
-              print(f"- document_count: `{len(data.get('documents', []))}`")
-              print(f"- manifest_sha256: `{data.get('manifest_sha256', 'UNKNOWN')}`")
+              print(f"- execution: {data.get('execution', 'UNKNOWN')}")
+              print(f"- release_state: {data.get('release_state', 'UNKNOWN')}")
+              print(f"- document_count: {len(data.get('documents', []))}")
+              print(f"- manifest_sha256: {data.get('manifest_sha256', 'UNKNOWN')}")
               for doc in data.get('documents', []):
-                  print(f"- document_receipt: `{doc.get('document_id','UNKNOWN')}` / `{doc.get('processor_receipt_sha256','UNKNOWN')}`")
+                  print(f"- document_receipt: {doc.get('document_id','UNKNOWN')} / {doc.get('processor_receipt_sha256','UNKNOWN')}")
           PY
           fi
           printf '\nNo API key, Authorization header, or private document content is included in this receipt.\n' >> live-dws-receipt.md
-          gh issue comment 3 --repo "${{ github.repository }}" --body-file live-dws-receipt.md
+          gh issue comment 3 --repo "${RUN_REPOSITORY}" --body-file live-dws-receipt.md
