@@ -2,6 +2,12 @@
 
 **One-line pitch:** After a document packet changes, ReleaseProof reprocesses the current evidence and preserves a prior human exception only when the exact document-scoped source-grounded finding binding still reproduces; otherwise the old review cannot release the new packet.
 
+## Submission readiness — READY
+
+ReleaseProof is submission-ready for the Nutrient DWS Challenge except for final media/form work. A paid Nutrient plan is **not required** for the implemented competition path: the core DWS operation has already been executed against the real hosted Processor API and retained as verifiable evidence. The exhausted free processing quota affects only an additional hosted Differential Reverification rerun and is tracked as a **non-blocking evidence limitation**, not a project-completion blocker.
+
+The current Nutrient challenge requires meaningful DWS use for a core document operation. ReleaseProof satisfies that boundary with the accepted three-document hosted Processor run; the public judge surface intentionally replays immutable evidence instead of consuming further API credits.
+
 ## Judge path
 
 Public evidence URL:
@@ -58,10 +64,10 @@ A hosted Differential Reverification acceptance harness was also implemented. It
 
 - deterministic Differential Reverification: **PASS**;
 - hosted core DWS integration: **PASS**;
-- hosted Differential Reverification rerun: **BLOCKED_QUOTA_402**;
+- hosted Differential Reverification rerun: **NON-BLOCKING LIMITATION — QUOTA_402**;
 - no claim is made that the hosted differential proof passed.
 
-No further DWS calls should be made until account quota/credits are restored.
+No further DWS calls should be made unless Nutrient provides additional event credits or a later experiment materially improves competition evidence. Enabling pay-as-you-go is not required for submission readiness.
 
 ## Production deployment — PASS
 
@@ -70,7 +76,7 @@ Dedicated Vercel project:
 - project: `evidencebound-releaseproof-dws`;
 - project ID: `prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`;
 - production alias: `https://evidencebound-releaseproof-dws.vercel.app`;
-- initial accepted deployment: `dpl_HDEAT39ZTarETnZUX7gTemWCG4to`;
+- accepted production revision: `dpl_DgptupzTPrqx9HsySqWtwenmUNoA`;
 - framework/runtime: FastAPI / Python 3.12;
 - build: **PASS**;
 - deployment state: **READY**;
@@ -83,11 +89,12 @@ No Nutrient credential is stored in Vercel. The exact deployment evidence surfac
 
 - public repository: **PASS**;
 - Python 3.11 / 3.12 / 3.13 GitHub Actions: **PASS**;
+- current public CI suite: **34/34 PASS per Python lane**;
 - compile gate: **PASS**;
 - controlled Differential Reverification: **PASS**;
 - hosted Nutrient core DWS acceptance: **PASS**;
 - public judge deployment: **PASS**;
-- hosted Differential Reverification: **BLOCKED_QUOTA_402**;
+- hosted Differential Reverification rerun: **NON-BLOCKING LIMITATION — QUOTA_402**;
 - DWS Viewer: **UNRUN / optional**;
 - real reviewer-time or customer metrics: **UNVERIFIED**.
 

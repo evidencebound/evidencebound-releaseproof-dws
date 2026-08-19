@@ -14,23 +14,30 @@
 | real hosted DWS processes a three-document synthetic packet through the post-drift normalizer and emits a current manifest | run `32215337912` | VERIFIED |
 | every retained live field has page provenance, bbox, normalized confidence and evidence-slice digest | live workflow verification + artifact | VERIFIED |
 | live ReleaseProof detects a cross-document disagreement produced by hosted extraction and returns REVIEW_REQUIRED rather than releasing | live manifest | VERIFIED |
-| hosted Differential Reverification preserves an unchanged review after a non-material revision | live differential acceptance | BLOCKED_QUOTA_402 |
+| hosted Differential Reverification preserves an unchanged review after a non-material revision | live differential acceptance | NON-BLOCKING LIMITATION — QUOTA_402 |
 | deterministic Differential Reverification preserves 1/1 unchanged scoped review and invalidates it after evidence-slice change | controlled evaluation | VERIFIED |
 | public repository and GitHub Actions test matrix | GitHub repository / Actions | VERIFIED |
 | dedicated public Vercel evidence URL serves health/live-evidence/evaluation/demo paths | Vercel production acceptance | VERIFIED |
 | public Vercel service performs no runtime Nutrient calls | deployed route surface + source + health contract | VERIFIED |
-| DWS Viewer human-review integration | live/product implementation | UNRUN |
+| submission requires a paid Nutrient tier | current challenge requirements + implemented path | FALSE / NOT REQUIRED |
+| DWS Viewer human-review integration | live/product implementation | UNRUN / OPTIONAL |
 | mechanism reduces real reviewer time | field study | UNVERIFIED |
+
+## Submission readiness
+
+**READY.** The core competition-critical DWS integration has a real hosted proof, public source, passing public CI, and a production judge evidence URL. Exhausted free credits prevent only an additional hosted Differential Reverification rerun. That missing rerun does not invalidate or remove the accepted hosted core DWS evidence and is not treated as a submission blocker.
 
 ## Canonical hosted evidence
 
 Core DWS evidence is anchored to GitHub Actions run `32215337912` at commit `d885ed31ebb8cc9449c450b0334c630c3b11f656`, artifact `9352133498`, digest `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`.
 
-The later quota-aware Differential Reverification harness passed public CI (`32215419913`) but its hosted rerun `32215515505` received HTTP `402` on the first `/build`. Further live calls were stopped. The user then received Nutrient's Free-plan warning with two processing credits remaining. This is recorded as a quota blocker, not converted into a mechanism failure or success.
+The later quota-aware Differential Reverification harness passed public CI (`32215419913`) but its hosted rerun `32215515505` received HTTP `402` on the first `/build`. Further live calls were stopped. The user then received Nutrient's Free-plan warning with two processing credits remaining. This is a **non-blocking quota limitation**, not converted into a mechanism failure or success.
+
+If Nutrient supplies additional event credits, the hosted differential workflow can be rerun without changing the mechanism. Enabling pay-as-you-go solely for this extra proof is not required.
 
 ## Public production evidence
 
-Dedicated Vercel project `evidencebound-releaseproof-dws` (`prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`) reached READY. Production alias `https://evidencebound-releaseproof-dws.vercel.app` returned HTTP 200 for `/`, `/health`, `/api/live-evidence`, `/api/evaluation`, and `/api/demo`; acceptance runtime logs showed no application error. Initial accepted deployment: `dpl_HDEAT39ZTarETnZUX7gTemWCG4to`.
+Dedicated Vercel project `evidencebound-releaseproof-dws` (`prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`) reached READY. Production alias `https://evidencebound-releaseproof-dws.vercel.app` serves the accepted judge paths. Canonical production revision: `dpl_DgptupzTPrqx9HsySqWtwenmUNoA`.
 
 The Vercel deployment is explicitly an `EVIDENCE_SURFACE`; executable mechanism source remains in this repository. The public service has no route that invokes Nutrient and stores no Nutrient credential.
 

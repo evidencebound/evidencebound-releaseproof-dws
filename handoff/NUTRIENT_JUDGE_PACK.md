@@ -8,6 +8,8 @@
 
 **Invention:** Differential Reverification with evidence-scoped human review and reminted release manifests.
 
+**Submission status:** **READY** except final video / Devpost form work. No paid Nutrient plan is required for the accepted competition path.
+
 ## Implemented and verified truth
 
 - dedicated public competition repository;
@@ -21,6 +23,7 @@
 - historical manifest invalidation after source change;
 - Differential Reverification selectively preserves unchanged review evidence in the controlled mechanism;
 - public GitHub Actions matrix on Python 3.11 / 3.12 / 3.13;
+- current public CI: **34/34 tests PASS per Python lane**;
 - live hosted DWS processing of three generated PDFs with no fixture fallback;
 - live field-level page/bbox/confidence/evidence-slice verification;
 - live current manifest and DWS response receipt hashes;
@@ -35,7 +38,7 @@ Dedicated Vercel project:
 
 - project: `evidencebound-releaseproof-dws`;
 - project ID: `prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`;
-- initial accepted deployment: `dpl_HDEAT39ZTarETnZUX7gTemWCG4to`;
+- accepted production revision: `dpl_DgptupzTPrqx9HsySqWtwenmUNoA`;
 - build: **PASS**;
 - deployment state: **READY**;
 - `/`: **HTTP 200 PASS**;
@@ -77,7 +80,7 @@ Retained evaluation:
 - Differential Reverification preserves 1/1 when the reviewed finding binding is unchanged;
 - when the reviewed evidence slice changes, 0/1 is preserved and current state returns to `REVIEW_REQUIRED`.
 
-### Hosted DWS differential run — BLOCKED_QUOTA_402
+### Hosted DWS differential rerun — NON-BLOCKING LIMITATION: QUOTA_402
 
 A hosted acceptance harness creates a byte-different but render-equivalent invoice revision, uses a clearly labelled synthetic acceptance-harness review, reprocesses the revised invoice through DWS, and runs `differential_reverify()`.
 
@@ -85,10 +88,14 @@ The first implementation redundantly reprocessed the base packet and reached HTT
 
 Hosted rerun `32215515505` then received HTTP `402` on the first `/build`; the diagnostic call also returned `402`. The user later received Nutrient's Free-plan warning showing two processing credits remaining. Further provider calls were stopped rather than spending more quota.
 
+This does **not** block submission readiness. The competition-critical DWS requirement is already evidenced by the accepted hosted core run. The hosted differential rerun is additional validation of the invention mechanism, not a prerequisite for meaningful DWS integration.
+
 Do **not** claim hosted Differential Reverification PASS. The correct distinction is:
 - hosted core DWS: **PASS**;
 - deterministic Differential Reverification: **PASS**;
-- hosted differential proof: **BLOCKED_QUOTA_402**.
+- hosted differential proof: **NON-BLOCKING LIMITATION — QUOTA_402**.
+
+Do not enable pay-as-you-go solely to remove this limitation. If Nutrient provides additional event credits, the existing workflow can rerun without code changes.
 
 ## Prize narrative
 
@@ -104,16 +111,18 @@ Do **not** claim hosted Differential Reverification PASS. The correct distinctio
 
 Version-aware approvals, provenance graphs and dependency invalidation already exist. ReleaseProof does not claim to invent them. The competition contribution is the concrete DWS-grounded, evidence-scoped Differential Reverification pipeline and release predicate. No patent novelty claim is made.
 
-## Remaining blockers
+## Non-blocking limitations / optional improvements
 
-### Hosted Differential Reverification rerun — BLOCKED_QUOTA_402
-After Nutrient quota/credits are restored, run the existing `live-nutrient-dws` workflow once. Do not change evidence-binding semantics to force a positive result; preserve provider-jitter negative results if observed.
+### Hosted Differential Reverification rerun — NON-BLOCKING / QUOTA_402
+Only rerun if Nutrient supplies additional event credits or the evidence value clearly justifies it. Do not modify evidence-binding semantics to force a positive result; preserve provider-jitter negative results if observed.
 
 ### DWS Viewer — OPTIONAL / UNRUN
 Evaluate only if it materially strengthens the human review experience without displacing Processor as the core document operation.
 
 ### Real user metrics — UNVERIFIED
 No claim of measured reviewer-time savings or customer adoption is made.
+
+None of the items above prevents the current project from being submitted and judged on its verified implementation.
 
 ## Capture targets
 
