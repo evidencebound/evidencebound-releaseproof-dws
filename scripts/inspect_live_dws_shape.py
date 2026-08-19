@@ -13,7 +13,7 @@ from typing import Any
 from releaseproof.dws import NutrientDwsTransport
 
 
-def schema_only(value: Any, *, depth: int = 0, max_depth: int = 6) -> Any:
+def schema_only(value: Any, *, depth: int = 0, max_depth: int = 8) -> Any:
     if depth >= max_depth:
         return {"type": type(value).__name__}
     if isinstance(value, dict):
