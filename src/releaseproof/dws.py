@@ -148,12 +148,18 @@ def normalize_processor_json(
     *,
     field_aliases: dict[str, str] | None = None,
 ) -> ExtractedDocument:
-    """Normalize DWS Processor `json-content` key-value output.
+    """Normalize DWS Processor ``json-content`` key-value output.
 
-    Public Processor documentation exposes `pages[].pageIndex` and
-    `pages[].keyValuePairs[]`, with pair confidence plus key/value `content` and
-    `bbox`. The value bbox is retained as the claim's source location. Unknown
-    shapes fail closed; no coordinates/confidence are fabricated.
+    Nutrient's documented examples expose ``pages[].pageIndex``. A live acceptance
+    run on 2026-08-19 observed a compatible ordered ``pages[]`` array whose page
+    objects contained ``plainText`` and ``keyValuePairs`` but omitted ``pageIndex``.
+
+    When ``pageIndex`` is present, it remains authoritative and must be a
+    non-negative integer. When it is absent, ReleaseProof uses the deterministic
+    zero-based position of that page object in the returned ``pages[]`` array and
+    marks the extraction source with ``ordered-page-position``. A present but
+    malformed index still fails closed; this compatibility path never guesses an
+    arbitrary page number.
     """
     aliases={k.strip().lower():v for k,v in (field_aliases or {}).items()}
     doc_sha=sha256(document_bytes).hexdigest()
@@ -162,12 +168,17 @@ def normalize_processor_json(
     if not isinstance(pages,list):
         raise DwsError("DWS Processor JSON missing pages array")
     fields:list[FieldValue]=[]
-    for page_obj in pages:
+    used_ordered_page_position=False
+    for page_position, page_obj in enumerate(pages):
         if not isinstance(page_obj,dict):
             raise DwsError("DWS Processor page was not an object")
-        page_index=page_obj.get("pageIndex")
-        if not isinstance(page_index,int) or page_index < 0:
-            raise DwsError("DWS Processor pageIndex missing or invalid")
+        if "pageIndex" in page_obj:
+            page_index=page_obj["pageIndex"]
+            if isinstance(page_index,bool) or not isinstance(page_index,int) or page_index < 0:
+                raise DwsError("DWS Processor pageIndex present but invalid")
+        else:
+            page_index=page_position
+            used_ordered_page_position=True
         pairs=page_obj.get("keyValuePairs",[])
         if not isinstance(pairs,list):
             raise DwsError("DWS Processor keyValuePairs was not an array")
@@ -191,7 +202,10 @@ def normalize_processor_json(
             ))
     if not fields:
         raise DwsError("DWS Processor JSON contained no usable key-value pairs")
-    return ExtractedDocument(document_id,doc_sha,"nutrient-dws:processor-json-content:keyValuePairs",receipt_sha,tuple(fields))
+    source="nutrient-dws:processor-json-content:keyValuePairs"
+    if used_ordered_page_position:
+        source += ":ordered-page-position"
+    return ExtractedDocument(document_id,doc_sha,source,receipt_sha,tuple(fields))
 
 
 def normalize_spatial_json(
@@ -204,8 +218,8 @@ def normalize_spatial_json(
     """Normalize Nutrient Data Extraction spatial JSON examples.
 
     Kept as an optional adapter because current public Nutrient materials describe
-    spatial JSON separately from Processor `/build`. The competition's live path
-    uses `normalize_processor_json` unless a separately verified Data Extraction
+    spatial JSON separately from Processor ``/build``. The competition's live path
+    uses ``normalize_processor_json`` unless a separately verified Data Extraction
     endpoint is adopted.
     """
     aliases = {k.strip().lower(): v for k, v in (field_aliases or {}).items()}
