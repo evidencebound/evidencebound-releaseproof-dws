@@ -43,3 +43,22 @@ jobs:
           assert revised.rstrip().endswith(b'%%EOF')
           print('render-equivalent nonmaterial revision validated')
           PY
+
+  source-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Archive exact tested source tree
+        run: |
+          git archive --format=zip HEAD -o releaseproof-source.zip
+          sha256sum releaseproof-source.zip > releaseproof-source.zip.sha256
+          git rev-parse HEAD > tested-head.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: releaseproof-source-snapshot
+          path: |
+            releaseproof-source.zip
+            releaseproof-source.zip.sha256
+            tested-head.txt
+          if-no-files-found: error
+          retention-days: 30
