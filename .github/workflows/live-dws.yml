@@ -14,7 +14,7 @@ permissions:
 jobs:
   live-dws-acceptance:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       NUTRIENT_API_KEY: ${{ secrets.NUTRIENT_API_KEY }}
     steps:
@@ -60,15 +60,24 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          p=Path('live-dws-output.json')
-          data=json.loads(p.read_text())
+          data=json.loads(Path('live-dws-output.json').read_text())
           assert data.get('execution') == 'LIVE_NUTRIENT_DWS'
           assert len(data.get('documents', [])) == 3
           assert data.get('manifest_sha256')
-          print('LIVE_NUTRIENT_DWS acceptance output validated')
+          for doc in data['documents']:
+              assert doc['dws_operation'].startswith('nutrient-dws:processor-json-content:keyValuePairs')
+              assert doc.get('dws_receipt_sha256')
+              assert doc.get('fields')
+              for field in doc['fields']:
+                  citation=field['citation']
+                  assert citation.get('page', 0) >= 1
+                  assert len(citation.get('bounds', [])) == 4
+                  assert 0 <= citation.get('confidence', -1) <= 1
+                  assert citation.get('evidence_slice_sha256')
+          print('LIVE_NUTRIENT_DWS source-grounding acceptance validated')
           PY
       - id: artifact
-        name: Upload sanitized acceptance evidence
+        name: Upload sanitized base acceptance evidence
         if: ${{ steps.verify.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
@@ -78,9 +87,44 @@ jobs:
             live-probe-input/*.pdf
           if-no-files-found: error
           retention-days: 14
+      - id: differential
+        name: Run hosted Differential Reverification probe
+        if: ${{ steps.verify.outcome == 'success' }}
+        run: |
+          PYTHONPATH=src:scripts python scripts/run_live_differential_probe.py > live-differential-output.json
+      - id: differential_verify
+        name: Verify live Differential Reverification result
+        if: ${{ steps.differential.outcome == 'success' }}
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('live-differential-output.json').read_text())
+          assert data['execution'] == 'LIVE_NUTRIENT_DWS_DIFFERENTIAL_REVERIFICATION'
+          assert data['review_evidence_class'] == 'synthetic-acceptance-harness-not-human-metric'
+          assert data['invoice_bytes_changed'] is True
+          assert data['changed_documents'] == ['invoice']
+          assert data['preserved_review_ids']
+          assert data['invalidated_review_ids'] == []
+          assert data['approved_state'] == 'VERIFIED'
+          assert data['current_state'] == 'VERIFIED'
+          assert data['original_invoice_sha256'] != data['revised_invoice_sha256']
+          print('LIVE Differential Reverification acceptance validated')
+          PY
+      - id: differential_artifact
+        name: Upload Differential Reverification evidence
+        if: ${{ always() && steps.differential.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-nutrient-dws-differential-reverification
+          path: |
+            live-differential-output.json
+            live-probe-revision/invoice-revised.pdf
+          if-no-files-found: error
+          retention-days: 14
       - id: diagnostic_artifact
         name: Upload sanitized schema diagnostic
-        if: ${{ steps.shape.outcome == 'success' }}
+        if: ${{ always() && steps.shape.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: live-nutrient-dws-schema
@@ -104,6 +148,9 @@ jobs:
           SHAPE_OUTCOME: ${{ steps.shape.outcome }}
           VERIFY_OUTCOME: ${{ steps.verify.outcome }}
           ARTIFACT_OUTCOME: ${{ steps.artifact.outcome }}
+          DIFFERENTIAL_OUTCOME: ${{ steps.differential.outcome }}
+          DIFFERENTIAL_VERIFY_OUTCOME: ${{ steps.differential_verify.outcome }}
+          DIFFERENTIAL_ARTIFACT_OUTCOME: ${{ steps.differential_artifact.outcome }}
           DIAGNOSTIC_ARTIFACT_OUTCOME: ${{ steps.diagnostic_artifact.outcome }}
         run: |
           cat > live-dws-receipt.md <<EOF
@@ -121,6 +168,9 @@ jobs:
           - schema_diagnostic: ${SHAPE_OUTCOME}
           - truth_marker_verification: ${VERIFY_OUTCOME}
           - artifact_upload: ${ARTIFACT_OUTCOME}
+          - differential_probe: ${DIFFERENTIAL_OUTCOME}
+          - differential_verification: ${DIFFERENTIAL_VERIFY_OUTCOME}
+          - differential_artifact_upload: ${DIFFERENTIAL_ARTIFACT_OUTCOME}
           - diagnostic_artifact_upload: ${DIAGNOSTIC_ARTIFACT_OUTCOME}
           EOF
           if [ -s live-dws-output.json ]; then
@@ -137,7 +187,25 @@ jobs:
               print(f"- document_count: {len(data.get('documents', []))}")
               print(f"- manifest_sha256: {data.get('manifest_sha256', 'UNKNOWN')}")
               for doc in data.get('documents', []):
-                  print(f"- document_receipt: {doc.get('document_id','UNKNOWN')} / {doc.get('processor_receipt_sha256','UNKNOWN')}")
+                  print(f"- document_receipt: {doc.get('document_id','UNKNOWN')} / {doc.get('dws_receipt_sha256','UNKNOWN')}")
+          PY
+          fi
+          if [ -s live-differential-output.json ]; then
+            python - <<'PY' >> live-dws-receipt.md
+          import json
+          from pathlib import Path
+          try:
+              data=json.loads(Path('live-differential-output.json').read_text())
+          except Exception:
+              print('- differential_output: UNAVAILABLE_OR_INVALID_JSON')
+          else:
+              print(f"- differential_execution: {data.get('execution','UNKNOWN')}")
+              print(f"- differential_review_class: {data.get('review_evidence_class','UNKNOWN')}")
+              print(f"- differential_changed_documents: {data.get('changed_documents', [])}")
+              print(f"- differential_preserved_review_count: {len(data.get('preserved_review_ids', []))}")
+              print(f"- differential_invalidated_review_count: {len(data.get('invalidated_review_ids', []))}")
+              print(f"- differential_current_state: {data.get('current_state','UNKNOWN')}")
+              print(f"- differential_current_manifest_sha256: {data.get('current_manifest_sha256','UNKNOWN')}")
           PY
           fi
           printf '\nNo API key, Authorization header, extracted document text, or private document content is included in this receipt.\n' >> live-dws-receipt.md

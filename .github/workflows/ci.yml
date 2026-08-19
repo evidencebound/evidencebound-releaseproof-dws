@@ -29,3 +29,17 @@ jobs:
               assert data.rstrip().endswith(b'%%EOF')
           print('synthetic live-probe packet validated')
           PY
+      - name: Validate nonmaterial revision bytes
+        run: |
+          python scripts/generate_synthetic_revision.py
+          python - <<'PY'
+          from pathlib import Path
+          original=Path('live-probe-input/invoice.pdf').read_bytes()
+          revised=Path('live-probe-revision/invoice-revised.pdf').read_bytes()
+          assert original != revised
+          assert original.replace(b'%%EOF\n', b'') == revised.replace(
+              b'% ReleaseProof nonmaterial revision B\n%%EOF\n', b''
+          )
+          assert revised.rstrip().endswith(b'%%EOF')
+          print('render-equivalent nonmaterial revision validated')
+          PY
