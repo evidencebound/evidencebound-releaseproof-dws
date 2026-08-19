@@ -1,6 +1,6 @@
 {
   "snapshot_date": "2026-08-19",
-  "evidence_class": "controlled mechanism + public GitHub CI + hosted Nutrient DWS acceptance evidence",
+  "evidence_class": "controlled mechanism + public GitHub CI + hosted Nutrient DWS acceptance + Vercel production acceptance",
   "checks": {
     "compileall": "PASS",
     "editable_install_no_build_isolation": "PASS",
@@ -15,12 +15,19 @@
     "nutrient_live_json_response": "PASS",
     "nutrient_live_schema_diagnostic": "PASS",
     "page_provenance_regression_tests": "PASS",
-    "pytest_27": "PASS",
     "live_nutrient_dws_core": "PASS",
     "live_differential_reverification": "BLOCKED_QUOTA_402",
     "public_github_repo": "PASS",
     "public_github_ci": "PASS",
-    "public_deployment": "BLOCKED",
+    "public_vercel_project": "PASS",
+    "public_vercel_build": "PASS",
+    "public_vercel_root": "PASS",
+    "public_vercel_health": "PASS",
+    "public_vercel_live_evidence": "PASS",
+    "public_vercel_evaluation": "PASS",
+    "public_vercel_demo": "PASS",
+    "public_vercel_runtime_errors": "PASS",
+    "public_deployment": "PASS",
     "ruff": "UNRUN",
     "mypy": "UNRUN",
     "bandit": "UNRUN",
@@ -49,7 +56,21 @@
     "quota_aware_harness_public_ci": "PASS",
     "quota_aware_live_run_id": 32215515505,
     "quota_aware_live_result": "BLOCKED_HTTP_402_ON_FIRST_BUILD",
+    "nutrient_free_plan_warning": "2_PROCESSING_CREDITS_REMAINING",
     "further_live_calls": "STOPPED_TO_AVOID_QUOTA_SPEND"
+  },
+  "production_evidence": {
+    "provider": "Vercel",
+    "project_name": "evidencebound-releaseproof-dws",
+    "project_id": "prj_zYwz9jdjY3PmbpoYFWUraPkLUPET",
+    "production_url": "https://evidencebound-releaseproof-dws.vercel.app",
+    "initial_accepted_deployment_id": "dpl_HDEAT39ZTarETnZUX7gTemWCG4to",
+    "framework": "fastapi",
+    "python": "3.12",
+    "region": "iad1",
+    "surface_class": "EVIDENCE_SURFACE",
+    "runtime_nutrient_calls": "DISABLED",
+    "nutrient_secret_in_vercel": "NOT_REQUIRED"
   },
   "retained_result_sha256": {
     "controlled_demo": "1980b3d59b3bec5f8cfaa4521e15dbc6dfc791e85d6016a6b749077b622ca0a4",
@@ -60,6 +81,7 @@
     "The hosted core DWS integration passed; the hosted Differential Reverification rerun did not execute because the Nutrient account began returning HTTP 402.",
     "The synthetic acceptance-harness review is not a real human-review metric.",
     "Ordered page position is used only when the provider omits pageIndex and is explicitly provenance-labelled.",
+    "The Vercel deployment is an evidence surface and does not execute Nutrient calls.",
     "No real reviewer-time savings are claimed."
   ]
 }
