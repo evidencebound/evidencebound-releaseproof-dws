@@ -1,6 +1,6 @@
 {
-  "snapshot_date": "2026-08-18",
-  "evidence_class": "controlled mechanism + public GitHub CI evidence",
+  "snapshot_date": "2026-08-19",
+  "evidence_class": "controlled mechanism + public GitHub CI + hosted Nutrient DWS acceptance evidence",
   "checks": {
     "compileall": "PASS",
     "editable_install_no_build_isolation": "PASS",
@@ -10,7 +10,11 @@
     "missing_nutrient_key_fail_closed": "PASS",
     "cross_document_review_replay_blocked": "PASS",
     "obvious_secret_scan": "PASS",
-    "live_nutrient_dws": "BLOCKED_NETWORK_DNS",
+    "nutrient_repository_secret_gate": "PASS",
+    "nutrient_hosted_build_network_path": "PASS",
+    "nutrient_live_json_response": "PASS",
+    "nutrient_live_schema_diagnostic": "PASS",
+    "live_nutrient_dws": "FAIL_PENDING_POST_FIX_RERUN",
     "public_github_repo": "PASS",
     "public_github_ci": "PASS",
     "public_deployment": "BLOCKED",
@@ -18,12 +22,16 @@
     "mypy": "UNRUN",
     "bandit": "UNRUN",
     "pip_audit": "UNRUN",
-    "pytest_20": "PASS"
+    "pytest_20_baseline": "PASS",
+    "page_provenance_regression_tests": "PENDING_PUBLIC_CI"
   },
-  "public_ci_evidence": {
-    "workflow_run_id": 32179703793,
-    "tested_branch_head": "161c62559c6737bacc375e4cd952c2f333f1dec2",
-    "conclusion": "success"
+  "live_dws_evidence": {
+    "strict_probe_run_id": 32214729108,
+    "schema_diagnostic_run_id": 32214840848,
+    "observed_failure": "DWS Processor pageIndex missing or invalid",
+    "observed_page_keys": ["keyValuePairs", "plainText"],
+    "observed_pair_grounding": ["confidence", "key.content", "key.bbox", "value.content", "value.bbox", "value.dataType"],
+    "compatibility_rule": "missing pageIndex uses ordered pages[] position with explicit ordered-page-position provenance; malformed present pageIndex fails closed"
   },
   "retained_result_sha256": {
     "controlled_demo": "1980b3d59b3bec5f8cfaa4521e15dbc6dfc791e85d6016a6b749077b622ca0a4",
@@ -31,7 +39,8 @@
   },
   "limits": [
     "Controlled fixtures are not live DWS output.",
-    "Real DWS response compatibility remains a mandatory live gate.",
+    "The post-drift compatibility fix is not accepted until a new three-document hosted DWS run passes.",
+    "Ordered page position is used only when the provider omits pageIndex and is explicitly provenance-labelled.",
     "No real reviewer-time savings are claimed."
   ]
 }
