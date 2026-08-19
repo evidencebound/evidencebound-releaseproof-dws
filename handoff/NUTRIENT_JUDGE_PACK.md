@@ -20,12 +20,32 @@
 - full packet/receipt/decision release manifest;
 - historical manifest invalidation after source change;
 - Differential Reverification selectively preserves unchanged review evidence in the controlled mechanism;
-- 27 deterministic tests + compile gate;
 - public GitHub Actions matrix on Python 3.11 / 3.12 / 3.13;
 - live hosted DWS processing of three generated PDFs with no fixture fallback;
 - live field-level page/bbox/confidence/evidence-slice verification;
 - live current manifest and DWS response receipt hashes;
-- real live `CROSS_DOCUMENT_MISMATCH` routed to `REVIEW_REQUIRED` rather than silently released.
+- real live `CROSS_DOCUMENT_MISMATCH` routed to `REVIEW_REQUIRED` rather than silently released;
+- dedicated public Vercel judge evidence surface with production acceptance.
+
+## Public judge URL — PASS
+
+`https://evidencebound-releaseproof-dws.vercel.app`
+
+Dedicated Vercel project:
+
+- project: `evidencebound-releaseproof-dws`;
+- project ID: `prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`;
+- initial accepted deployment: `dpl_HDEAT39ZTarETnZUX7gTemWCG4to`;
+- build: **PASS**;
+- deployment state: **READY**;
+- `/`: **HTTP 200 PASS**;
+- `/health`: **HTTP 200 PASS**;
+- `/api/live-evidence`: **HTTP 200 PASS**;
+- `/api/evaluation`: **HTTP 200 PASS**;
+- `/api/demo`: **HTTP 200 PASS**;
+- runtime application errors during acceptance: **none observed**.
+
+The deployed service is explicitly an `EVIDENCE_SURFACE`. It exposes retained live receipts and controlled mechanism evidence but has no endpoint that invokes Nutrient. No Nutrient API key is stored in Vercel. Executable mechanism source remains in the public repository. This avoids allowing a judge/crawler to consume the exhausted processing quota.
 
 ## Canonical hosted DWS proof
 
@@ -63,7 +83,7 @@ A hosted acceptance harness creates a byte-different but render-equivalent invoi
 
 The first implementation redundantly reprocessed the base packet and reached HTTP `402` before the revised-document result. It was redesigned to reuse the accepted base DWS evidence, reducing total hosted calls from seven to four. That quota-aware harness passed public CI in run `32215419913`.
 
-Hosted rerun `32215515505` then received HTTP `402` on the first `/build`; the diagnostic call also returned `402`. No Differential Reverification result was produced. Further provider calls were stopped rather than spending more quota.
+Hosted rerun `32215515505` then received HTTP `402` on the first `/build`; the diagnostic call also returned `402`. The user later received Nutrient's Free-plan warning showing two processing credits remaining. Further provider calls were stopped rather than spending more quota.
 
 Do **not** claim hosted Differential Reverification PASS. The correct distinction is:
 - hosted core DWS: **PASS**;
@@ -72,11 +92,11 @@ Do **not** claim hosted Differential Reverification PASS. The correct distinctio
 
 ## Prize narrative
 
-**Progress:** public source, passing public CI, live DWS-backed document processing, real source-grounding receipts, release-manifest generation, deterministic review/reverification mechanism and judge UI.
+**Progress:** public source, passing public CI, live DWS-backed document processing, real source-grounding receipts, release-manifest generation, deterministic review/reverification mechanism, and a live public evidence URL.
 
 **Concept:** stale approvals should not survive merely because a file/version identifier changed or remained familiar. ReleaseProof binds review to the exact source-grounded finding evidence and remints the decision state for the current packet.
 
-**Feasibility:** the hosted Processor integration now works end-to-end on three PDFs. The live disagreement case demonstrates why deterministic cross-document reconciliation plus explicit human review is operationally useful. Customer productivity remains a hypothesis, not a measured claim.
+**Feasibility:** the hosted Processor integration works end-to-end on three PDFs. The live disagreement case demonstrates why deterministic cross-document reconciliation plus explicit human review is operationally useful. The public judge URL exposes the proof without risking additional provider calls. Customer productivity remains a hypothesis, not a measured claim.
 
 **Sponsor memory hook:** “After the packet changes, prove which human review is still grounded in the current document — and which one is not.”
 
@@ -85,9 +105,6 @@ Do **not** claim hosted Differential Reverification PASS. The correct distinctio
 Version-aware approvals, provenance graphs and dependency invalidation already exist. ReleaseProof does not claim to invent them. The competition contribution is the concrete DWS-grounded, evidence-scoped Differential Reverification pipeline and release predicate. No patent novelty claim is made.
 
 ## Remaining blockers
-
-### Public judge deployment — BLOCKED
-Deploy the exact accepted source behind a server-side secret boundary and run the full public smoke path. Never expose `NUTRIENT_API_KEY` to browser code.
 
 ### Hosted Differential Reverification rerun — BLOCKED_QUOTA_402
 After Nutrient quota/credits are restored, run the existing `live-nutrient-dws` workflow once. Do not change evidence-binding semantics to force a positive result; preserve provider-jitter negative results if observed.
@@ -100,14 +117,14 @@ No claim of measured reviewer-time savings or customer adoption is made.
 
 ## Capture targets
 
-- public judge hero showing live/fixture truth state;
+- public judge hero at `https://evidencebound-releaseproof-dws.vercel.app`;
 - sanitized hosted DWS run/receipt evidence;
 - page/bbox/confidence grounding;
 - live mismatch -> `REVIEW_REQUIRED`;
-- scoped approval UI;
+- scoped approval UI from the executable repository judge path;
 - controlled non-material revision preserving unchanged review into a **new** manifest;
 - material reviewed-slice revision invalidating the old review;
 - live manifest/audit hashes;
 - explicit quota-boundary disclosure for hosted Differential Reverification.
 
-See `docs/live-dws-evidence.md` and `qa/QA_RECEIPT.json`.
+See `docs/live-dws-evidence.md`, `docs/vercel-production-evidence.md`, and `qa/QA_RECEIPT.json`.
