@@ -38,7 +38,7 @@
     "live_differential_reverification": "NON_BLOCKING_LIMITATION_QUOTA_402",
     "public_github_repo": "PASS",
     "public_github_ci_latest_behavioral_head": "PASS_RUN_32751455299",
-    "public_github_ci_final_truth_metadata_head": "PENDING_FINAL_RUN",
+    "public_github_ci_merge_gate": "REQUIRE_GREEN_CURRENT_PR_HEAD",
     "public_vercel_project": "PASS_HISTORICAL",
     "public_vercel_build": "PASS_HISTORICAL",
     "public_vercel_root": "PASS_HISTORICAL",
