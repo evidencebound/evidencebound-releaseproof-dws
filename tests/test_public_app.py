@@ -38,6 +38,25 @@ def test_public_judge_surface_matches_claims_ledger_truth():
     assert 'LIVE NUTRIENT DWS UNVERIFIED' not in html
 
 
+def test_public_surface_describes_semantic_identity_not_confidence_binding():
+    client = TestClient(app)
+    html = client.get('/').text
+    assert 'page + field path + normalized value + bounding box tolerance' in html
+    assert 'bounds and confidence' not in html
+    assert '>27<' not in html
+    assert 'Python 3.11-3.13' in html
+
+
+def test_public_surface_explains_frozen_authority_policy_without_compliance_overclaim():
+    client = TestClient(app)
+    html = client.get('/').text
+    assert 'Frozen Authority Policy' in html
+    assert 'evidence-equivalence/1' in html
+    assert 'runtime defaults cannot silently reinterpret it' in html
+    assert 'SOC 2 compliant' not in html
+    assert 'FDA 21 CFR Part 11 compliant' not in html
+
+
 def test_public_controlled_endpoints_remain_functional():
     client = TestClient(app)
     demo = client.get('/api/demo')

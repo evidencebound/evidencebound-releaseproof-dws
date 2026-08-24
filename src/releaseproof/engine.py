@@ -2,28 +2,58 @@ from __future__ import annotations
 
 from dataclasses import replace
 
-from .model import ExtractedDocument, Finding, HumanReview, ReleaseManifest, ReleaseState, digest
+from .model import (
+    EvidenceEquivalencePolicy,
+    ExtractedDocument,
+    Finding,
+    HumanReview,
+    ReleaseManifest,
+    ReleaseState,
+    ReverificationResult,
+    digest,
+    evidence_sets_equivalent,
+)
 
 
 REQUIRED = ("shipment_id", "quantity", "currency", "declared_value")
 CONFIDENCE_THRESHOLD = 0.92
+DEFAULT_BBOX_TOLERANCE = 2.0
+DEFAULT_EQUIVALENCE_POLICY = EvidenceEquivalencePolicy(bbox_tolerance=DEFAULT_BBOX_TOLERANCE)
 
 
-def _finding(rule: str, field: str, severity: str, state: ReleaseState, message: str, citations) -> Finding:
+def _finding(
+    rule: str,
+    field: str,
+    severity: str,
+    state: ReleaseState,
+    message: str,
+    citations,
+    *,
+    scope_document_ids: tuple[str, ...] | None = None,
+) -> Finding:
+    citations = tuple(citations)
+    scope = scope_document_ids or tuple(sorted({citation.document_id for citation in citations}))
+    finding_id = digest({
+        "finding_schema": "releaseproof/logical-finding/2",
+        "rule": rule,
+        "field": field,
+        "documents": list(scope),
+    })[:16]
     return Finding(
-        finding_id=digest({"rule": rule, "field": field, "evidence_slices": [c.evidence_slice_sha256 for c in citations]})[:16],
+        finding_id=finding_id,
         rule_id=rule,
         field=field,
         severity=severity,
         state=state,
         message=message,
-        citations=tuple(citations),
+        citations=citations,
     )
 
 
 def reconcile(documents: tuple[ExtractedDocument, ...]) -> tuple[Finding, ...]:
     findings: list[Finding] = []
     maps = [(doc, doc.by_field()) for doc in documents]
+    all_document_ids = tuple(sorted(doc.document_id for doc in documents))
     for field in REQUIRED:
         values = []
         citations = []
@@ -37,34 +67,85 @@ def reconcile(documents: tuple[ExtractedDocument, ...]) -> tuple[Finding, ...]:
             citations.append(item.citation)
             if item.citation.confidence < CONFIDENCE_THRESHOLD:
                 findings.append(_finding(
-                    "LOW_CONFIDENCE", field, "medium", ReleaseState.REVIEW_REQUIRED,
+                    "LOW_CONFIDENCE",
+                    field,
+                    "medium",
+                    ReleaseState.REVIEW_REQUIRED,
                     f"{doc.document_id}.{field} confidence={item.citation.confidence:.3f} below {CONFIDENCE_THRESHOLD:.2f}",
                     (item.citation,),
+                    scope_document_ids=(doc.document_id,),
                 ))
         if missing:
             findings.append(_finding(
-                "MISSING_FIELD", field, "high", ReleaseState.BLOCKED,
-                f"Required field {field} missing from: {', '.join(sorted(missing))}", citations,
+                "MISSING_FIELD",
+                field,
+                "high",
+                ReleaseState.BLOCKED,
+                f"Required field {field} missing from: {', '.join(sorted(missing))}",
+                citations,
+                scope_document_ids=all_document_ids,
             ))
         elif len(set(values)) > 1:
             findings.append(_finding(
-                "CROSS_DOCUMENT_MISMATCH", field, "high", ReleaseState.REVIEW_REQUIRED,
-                f"Documents disagree on {field}: {sorted(set(values))}", citations,
+                "CROSS_DOCUMENT_MISMATCH",
+                field,
+                "high",
+                ReleaseState.REVIEW_REQUIRED,
+                f"Documents disagree on {field}: {sorted(set(values))}",
+                citations,
+                scope_document_ids=all_document_ids,
             ))
     return tuple(findings)
 
 
-def _valid_reviews(findings: tuple[Finding, ...], reviews: tuple[HumanReview, ...]) -> dict[str, HumanReview]:
+def _review_matches_finding(review: HumanReview, finding: Finding) -> bool:
+    if review.finding_id != finding.finding_id:
+        return False
+
+    # Historical manifests created before frozen equivalence-policy support remain
+    # fail-closed to their exact binding. We never infer a tolerance retroactively.
+    if not review.evidence_identities or review.equivalence_policy is None:
+        return review.finding_binding == finding.binding
+
+    policy = review.equivalence_policy
+    if not policy.supported:
+        return False
+
+    current_identities = finding.evidence_identities
+    if any(item.value_normalization != policy.value_normalization for item in review.evidence_identities):
+        return False
+    if any(item.value_normalization != policy.value_normalization for item in current_identities):
+        return False
+
+    return evidence_sets_equivalent(
+        review.evidence_identities,
+        current_identities,
+        bbox_tolerance=policy.bbox_tolerance,
+    )
+
+
+def _valid_reviews(
+    findings: tuple[Finding, ...],
+    reviews: tuple[HumanReview, ...],
+) -> dict[str, HumanReview]:
     by_id = {review.finding_id: review for review in reviews}
     valid: dict[str, HumanReview] = {}
     for finding in findings:
         review = by_id.get(finding.finding_id)
-        if review and review.finding_binding == finding.binding:
+        if review and _review_matches_finding(review, finding):
             valid[finding.finding_id] = review
     return valid
 
 
-def decide(findings: tuple[Finding, ...], reviews: tuple[HumanReview, ...]) -> ReleaseState:
+def decide(
+    findings: tuple[Finding, ...],
+    reviews: tuple[HumanReview, ...],
+    *,
+    bbox_tolerance: float = DEFAULT_BBOX_TOLERANCE,
+) -> ReleaseState:
+    # bbox_tolerance is retained only for source compatibility with the v2 API.
+    # Policy-bound reviews are never reinterpreted through this runtime value.
+    _ = bbox_tolerance
     valid = _valid_reviews(findings, reviews)
     if any(f.state == ReleaseState.BLOCKED for f in findings):
         return ReleaseState.BLOCKED
@@ -82,18 +163,39 @@ def build_manifest(
     documents: tuple[ExtractedDocument, ...],
     reviews: tuple[HumanReview, ...] = (),
     policy_version: str = "trade-release/1",
+    *,
+    bbox_tolerance: float = DEFAULT_BBOX_TOLERANCE,
 ) -> ReleaseManifest:
     findings = reconcile(documents)
-    state = decide(findings, reviews)
-    manifest = ReleaseManifest("releaseproof/1", policy_version, documents, findings, reviews, state)
+    state = decide(findings, reviews, bbox_tolerance=bbox_tolerance)
+    manifest = ReleaseManifest("releaseproof/3", policy_version, documents, findings, reviews, state)
     return replace(manifest, manifest_sha256=digest(manifest.unsigned_payload()))
 
 
-def review_finding(manifest: ReleaseManifest, finding_id: str, reviewer: str, decision: str, rationale: str) -> ReleaseManifest:
+def review_finding(
+    manifest: ReleaseManifest,
+    finding_id: str,
+    reviewer: str,
+    decision: str,
+    rationale: str,
+    *,
+    equivalence_policy: EvidenceEquivalencePolicy | None = None,
+) -> ReleaseManifest:
     finding = next((item for item in manifest.findings if item.finding_id == finding_id), None)
     if finding is None:
         raise KeyError(finding_id)
-    review = HumanReview(finding.finding_id, finding.binding, decision, reviewer, rationale)
+    policy = equivalence_policy or DEFAULT_EQUIVALENCE_POLICY
+    if not policy.supported:
+        raise ValueError("cannot create review with unsupported equivalence policy")
+    review = HumanReview(
+        finding_id=finding.finding_id,
+        finding_binding=finding.binding,
+        decision=decision,
+        reviewer=reviewer,
+        rationale=rationale,
+        evidence_identities=finding.evidence_identities,
+        equivalence_policy=policy,
+    )
     kept = tuple(item for item in manifest.reviews if item.finding_id != finding_id)
     return build_manifest(manifest.documents, kept + (review,), manifest.policy_version)
 
@@ -111,18 +213,36 @@ def verify_manifest(manifest: ReleaseManifest, current_documents: tuple[Extracte
     return rebuilt.release_state
 
 
+def _changed_pages(
+    prior_documents: tuple[ExtractedDocument, ...],
+    current_documents: tuple[ExtractedDocument, ...],
+) -> tuple[tuple[str, int], ...]:
+    prior_by_id = {document.document_id: document for document in prior_documents}
+    current_by_id = {document.document_id: document for document in current_documents}
+    changed: list[tuple[str, int]] = []
+    for document_id in sorted(set(prior_by_id) | set(current_by_id)):
+        old_document = prior_by_id.get(document_id)
+        new_document = current_by_id.get(document_id)
+        old_pages = old_document.page_digest_map() if old_document else {}
+        new_pages = new_document.page_digest_map() if new_document else {}
+        for page in sorted(set(old_pages) | set(new_pages)):
+            if old_pages.get(page) != new_pages.get(page):
+                changed.append((document_id, page))
+    return tuple(changed)
+
+
 def differential_reverify(
     prior: ReleaseManifest,
     current_documents: tuple[ExtractedDocument, ...],
-):
-    """Mint a current manifest while reusing only still-valid evidence-scoped reviews.
+    *,
+    bbox_tolerance: float = DEFAULT_BBOX_TOLERANCE,
+) -> ReverificationResult:
+    """Mint a current manifest while reusing only still-valid semantic review authority.
 
-    Whole-document changes never make the old manifest current. Instead this function
-    computes a fresh manifest and carries forward only reviews whose finding binding
-    is reproduced from the current source-grounded evidence slices.
+    Each semantic HumanReview carries the equivalence policy frozen when authority
+    was granted. ``bbox_tolerance`` remains as a v2 compatibility argument but cannot
+    loosen or tighten an existing policy-bound review.
     """
-    from .model import ReverificationResult
-
     if digest(prior.unsigned_payload()) != prior.manifest_sha256:
         raise ValueError("prior manifest integrity failure")
     old_docs = {d.document_id: d.document_sha256 for d in prior.documents}
@@ -131,21 +251,28 @@ def differential_reverify(
         doc_id for doc_id in set(old_docs) | set(new_docs)
         if old_docs.get(doc_id) != new_docs.get(doc_id)
     ))
+    changed_pages = _changed_pages(prior.documents, current_documents)
     current_findings = reconcile(current_documents)
     current_by_id = {f.finding_id: f for f in current_findings}
-    preserved = []
-    invalidated = []
+    preserved: list[HumanReview] = []
+    invalidated: list[HumanReview] = []
     for review in prior.reviews:
         finding = current_by_id.get(review.finding_id)
-        if finding is not None and finding.binding == review.finding_binding:
+        if finding is not None and _review_matches_finding(review, finding):
             preserved.append(review)
         else:
             invalidated.append(review)
-    current = build_manifest(current_documents, tuple(preserved), prior.policy_version)
+    current = build_manifest(
+        current_documents,
+        tuple(preserved),
+        prior.policy_version,
+        bbox_tolerance=bbox_tolerance,
+    )
     return ReverificationResult(
         prior_manifest_sha256=prior.manifest_sha256,
         current_manifest=current,
         changed_documents=changed_documents,
         preserved_review_ids=tuple(sorted(r.finding_id for r in preserved)),
         invalidated_review_ids=tuple(sorted(r.finding_id for r in invalidated)),
+        changed_pages=changed_pages,
     )

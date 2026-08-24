@@ -1,6 +1,6 @@
-COMMERCIAL INVOICE - RESCAN
+COMMERCIAL INVOICE - CORRECTION
 Shipment: SHP-260818-42
-Quantity: 100
+Quantity: 99
 Currency: USD
 Declared Value: 25000
-Scan quality degraded on quantity region.
+Corrected quantity differs from the previously reviewed evidence.
