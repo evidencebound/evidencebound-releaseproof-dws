@@ -1,7 +1,7 @@
 {
   "snapshot_date": "2026-08-24",
   "submission_readiness": "READY_WITH_HOSTED_V2_UNRUN",
-  "evidence_class": "controlled semantic authority mechanism + public GitHub CI + historical hosted Nutrient Processor acceptance + historical Vercel production acceptance",
+  "evidence_class": "controlled semantic authority mechanism + public GitHub CI + historical hosted Nutrient Processor acceptance + current refactored Vercel production acceptance",
   "checks": {
     "semantic_evidence_identity": "PASS",
     "stable_logical_finding_identity": "PASS",
@@ -24,6 +24,7 @@
     "nutrient_studio_schema_generation": "UNRUN_EXTERNAL_PRODUCT_STEP",
     "viewer_review_projection": "PASS_PROJECTION_TEST_HOSTED_UNRUN",
     "processor_sign_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
+    "vercel_root_entrypoint_contract": "PASS",
     "compileall": "PASS",
     "controlled_demo": "PASS",
     "controlled_evaluation": "PASS",
@@ -37,16 +38,17 @@
     "live_nutrient_dws_core": "PASS_HISTORICAL",
     "live_differential_reverification": "NON_BLOCKING_LIMITATION_QUOTA_402",
     "public_github_repo": "PASS",
-    "public_github_ci_latest_behavioral_head": "PASS_RUN_32751455299",
-    "public_github_ci_merge_gate": "REQUIRE_GREEN_CURRENT_PR_HEAD",
-    "public_vercel_project": "PASS_HISTORICAL",
-    "public_vercel_build": "PASS_HISTORICAL",
-    "public_vercel_root": "PASS_HISTORICAL",
-    "public_vercel_health": "PASS_HISTORICAL",
-    "public_vercel_live_evidence": "PASS_HISTORICAL",
-    "public_vercel_evaluation": "PASS_HISTORICAL",
-    "public_vercel_demo": "PASS_HISTORICAL",
-    "refactor_production_acceptance": "UNRUN",
+    "public_github_ci_semantic_refactor": "PASS_RUN_32751759793",
+    "public_github_ci_vercel_entrypoint_fix": "PASS_RUN_32757860664",
+    "public_vercel_project": "PASS",
+    "public_vercel_build": "PASS",
+    "public_vercel_root": "PASS_HTTP_200",
+    "public_vercel_health": "PASS_HTTP_200",
+    "public_vercel_live_evidence": "PASS_HTTP_200",
+    "public_vercel_evaluation": "PASS_HTTP_200",
+    "public_vercel_demo": "PASS_HTTP_200",
+    "public_vercel_runtime_errors": "PASS_NONE_OBSERVED_ON_ACCEPTED_PATHS",
+    "refactor_production_acceptance": "PASS",
     "regulatory_compliance_or_certification": "NOT_CLAIMED",
     "legal_non_repudiation": "NOT_CLAIMED",
     "paid_nutrient_plan_required_for_existing_submission_path": "NO",
@@ -100,14 +102,12 @@
       "viewer_annotations_comments_layers",
       "processor_digital_signature"
     ],
-    "latest_behavioral_green_head": "64df78da6dd3dcbb94bf699f5eb24558cee17091",
-    "latest_behavioral_tests_per_python_lane": 56,
-    "latest_behavioral_python_lanes": [
-      "3.11",
-      "3.12",
-      "3.13"
-    ],
-    "latest_behavioral_ci_run_id": 32751455299
+    "semantic_refactor_merge_commit": "3584e577f62f65aec2f977028970c78d15e06c18",
+    "vercel_entrypoint_fix_merge_commit": "bd670240a681ad139921597ba10b534a570c07f4",
+    "semantic_refactor_tests_per_python_lane": 56,
+    "semantic_refactor_ci_run_id": 32751759793,
+    "vercel_entrypoint_fix_ci_run_id": 32757860664,
+    "python_lanes": ["3.11", "3.12", "3.13"]
   },
   "live_dws_evidence": {
     "canonical_core_run_id": 32215337912,
@@ -124,7 +124,6 @@
     "live_release_state": "REVIEW_REQUIRED",
     "live_review_trigger": "CROSS_DOCUMENT_MISMATCH after hosted extraction produced divergent Shipment ID strings",
     "quota_aware_harness_public_ci_run_id": 32215419913,
-    "quota_aware_harness_public_ci": "PASS",
     "quota_aware_live_run_id": 32215515505,
     "quota_aware_live_result": "HTTP_402_ON_FIRST_BUILD",
     "quota_effect_on_submission": "NON_BLOCKING",
@@ -142,11 +141,17 @@
     "project_name": "evidencebound-releaseproof-dws",
     "project_id": "prj_zYwz9jdjY3PmbpoYFWUraPkLUPET",
     "production_url": "https://evidencebound-releaseproof-dws.vercel.app",
-    "accepted_deployment_id": "dpl_DgptupzTPrqx9HsySqWtwenmUNoA",
-    "acceptance_class": "HISTORICAL_PRE_REFACTOR",
+    "accepted_deployment_id": "dpl_7zdyqLmgv4PEyHxUPJkP6Dp3gDhn",
+    "immutable_deployment_url": "https://evidencebound-releaseproof-9un6wo3iu.vercel.app",
+    "accepted_commit_sha": "bd670240a681ad139921597ba10b534a570c07f4",
+    "acceptance_class": "CURRENT_REFACTOR_PRODUCTION_PASS",
     "surface_class": "EVIDENCE_SURFACE",
-    "runtime_nutrient_calls": "DISABLED",
-    "nutrient_secret_in_vercel": "NOT_REQUIRED"
+    "deployment_state": "READY",
+    "accepted_endpoints": ["/", "/health", "/api/live-evidence", "/api/evaluation", "/api/demo"],
+    "runtime_errors_on_acceptance_paths": "NONE_OBSERVED",
+    "runtime_nutrient_calls": "DISABLED_TO_PRESERVE_EXHAUSTED_QUOTA",
+    "nutrient_secret_in_vercel": "NOT_REQUIRED",
+    "acceptance_document": "docs/production-acceptance-2026-08-24.md"
   },
   "retained_result_sha256": {
     "controlled_demo": "98df85448fc365fde4dbccc76cd8876f3bc95227daf464fd80aa2721eb1c2c26",
@@ -165,7 +170,7 @@
     "The old manifest never becomes current after a source revision; a new manifest is minted with only still-grounded authority carried forward under each review's frozen policy.",
     "Frozen equivalence policy supports deterministic replay but is not by itself regulatory compliance, certification, or legal non-repudiation.",
     "The synthetic acceptance-harness review is not a real human-review metric.",
-    "The Vercel acceptance recorded here predates the refactor and must be rerun after merge.",
+    "Current Vercel production acceptance proves the refactored evidence surface only; it does not prove hosted execution of the new DWS-native v2 provider calls.",
     "No real reviewer-time savings or market-size claim is made."
   ]
 }
