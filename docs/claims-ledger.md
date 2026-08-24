@@ -2,43 +2,74 @@
 
 | Claim | Evidence class | Status |
 |---|---|---|
-| controlled packet reaches REVIEW_REQUIRED then VERIFIED after scoped review | deterministic fixtures/tests | VERIFIED locally + public CI |
-| non-material file revision creates a new manifest and preserves 1/1 unchanged scoped review in retained fixture | controlled evaluation | VERIFIED locally + public CI |
-| reviewed evidence-slice change invalidates 1/1 prior scoped review in retained fixture | controlled evaluation | VERIFIED locally + public CI |
-| malformed/missing source grounding fails closed | tests | VERIFIED locally + public CI |
-| controlled fixtures are explicitly distinguishable from live DWS | provenance labels/UI/tests | VERIFIED locally + public CI |
-| missing `NUTRIENT_API_KEY` produces fail-closed live probe | local negative test | VERIFIED locally |
-| hosted DWS request reaches real Processor `/build` using repository secret | live GitHub Actions | VERIFIED |
-| hosted DWS returns parseable `json-content` with grounded key/value content, bbox and confidence | hosted GitHub Actions + retained artifact | VERIFIED |
-| live response may omit documented `pageIndex`; ordered-page-position compatibility is provenance-labelled and malformed present indices still fail closed | live diagnostic + public CI | VERIFIED |
-| real hosted DWS processes a three-document synthetic packet through the post-drift normalizer and emits a current manifest | run `32215337912` | VERIFIED |
-| every retained live field has page provenance, bbox, normalized confidence and evidence-slice digest | live workflow verification + artifact | VERIFIED |
-| live ReleaseProof detects a cross-document disagreement produced by hosted extraction and returns REVIEW_REQUIRED rather than releasing | live manifest | VERIFIED |
-| hosted Differential Reverification preserves an unchanged review after a non-material revision | live differential acceptance | NON-BLOCKING LIMITATION — QUOTA_402 |
-| deterministic Differential Reverification preserves 1/1 unchanged scoped review and invalidates it after evidence-slice change | controlled evaluation | VERIFIED |
-| public repository and GitHub Actions test matrix | GitHub repository / Actions | VERIFIED |
-| dedicated public Vercel evidence URL serves health/live-evidence/evaluation/demo paths | Vercel production acceptance | VERIFIED |
-| public Vercel service performs no runtime Nutrient calls | deployed route surface + source + health contract | VERIFIED |
-| submission requires a paid Nutrient tier | current challenge requirements + implemented path | FALSE / NOT REQUIRED |
-| DWS Viewer human-review integration | live/product implementation | UNRUN / OPTIONAL |
+| controlled packet reaches `REVIEW_REQUIRED` then `VERIFIED` after scoped review | deterministic fixtures/tests | VERIFIED / public CI |
+| non-material whole-file revision creates a new manifest and preserves the unchanged review | controlled evaluation + parity-locked retained result | VERIFIED / public CI |
+| confidence-only drift does not by itself change semantic evidence identity | semantic reverification regression test | VERIFIED / public CI |
+| normalized-value change invalidates prior review authority | controlled evaluation + regression test | VERIFIED / public CI |
+| bbox movement within configured tolerance can preserve review; movement outside tolerance invalidates it | semantic reverification regression tests | VERIFIED / public CI |
+| page-7 integrity change can leave page-2 review authority valid | page-level blast-radius regression test | VERIFIED / public CI |
+| stable logical finding ID is separate from changing semantic evidence binding | semantic reverification regression test | VERIFIED / public CI |
+| malformed/missing source grounding fails closed | normalizer tests | VERIFIED / public CI |
+| controlled fixtures are explicitly distinguishable from live DWS | provenance labels/UI/tests | VERIFIED / public CI |
+| retained `results/controlled-demo.json` and `results/evaluation.json` match current executable mechanism | retained-result parity tests | VERIFIED when final PR CI is green |
+| hosted DWS request reached real Processor `/build` using repository secret | historical live GitHub Actions | VERIFIED |
+| hosted Processor returned parseable grounded key/value content with bbox and confidence | historical hosted Actions + retained artifact | VERIFIED |
+| live response may omit documented `pageIndex`; ordered-page-position compatibility is provenance-labelled and malformed present indices fail closed | live diagnostic + public CI | VERIFIED |
+| real hosted DWS processed a three-document synthetic packet and produced a current manifest | run `32215337912` | VERIFIED |
+| live ReleaseProof detected a cross-document disagreement and returned `REVIEW_REQUIRED` rather than releasing | historical live manifest | VERIFIED |
+| Processor-native OCR + flatten canonicalization adapter is implemented | contract tests | VERIFIED / hosted UNRUN |
+| Processor-native page isolation uses `parts[].pages` rather than local splitting | contract tests | VERIFIED / hosted UNRUN |
+| Data Extraction adapter uses `/extraction/extract` with external schema and `citationsEnabled: true` | contract tests against official request shape | VERIFIED / hosted UNRUN |
+| Data Extraction normalizer consumes provider page/bbox/confidence/source evidence and fails closed if grounding is missing | contract tests | VERIFIED / hosted UNRUN |
+| production schema is generated/refined in Nutrient Studio | provider execution | UNVERIFIED; repository only accepts external schema and makes no Studio-generation claim |
+| Viewer finding/review maps to annotation + reviewer-specific layer/comment + named approved layer | deterministic projection contract | VERIFIED / hosted Viewer UNRUN |
+| release artifact can be sealed through Processor `/sign` adapter | contract test | VERIFIED / hosted signing UNRUN |
+| hosted Differential Reverification preserves review after non-material revision | live differential acceptance | NON-BLOCKING LIMITATION - QUOTA_402 |
+| public repository and Python 3.11/3.12/3.13 GitHub Actions matrix | GitHub repository / Actions | final refactor head must be green before merge |
+| public Vercel evidence URL serves health/live-evidence/evaluation/demo paths | previous production acceptance | VERIFIED HISTORICALLY; refactor deployment requires new acceptance |
+| public Vercel service performs no runtime Nutrient calls | route surface + source + health contract | VERIFIED HISTORICALLY; recheck after deploy |
+| Differential Reverification addresses a real corrected/re-issued packet workflow | Nutrient Solutions Engineering field feedback from customer projects | EXTERNAL FIELD OBSERVATION, not a market-size or roadmap claim |
 | mechanism reduces real reviewer time | field study | UNVERIFIED |
 
-## Submission readiness
+## Semantic v2 truth boundary
 
-**READY.** The core competition-critical DWS integration has a real hosted proof, public source, passing public CI, and a production judge evidence URL. Exhausted free credits prevent only an additional hosted Differential Reverification rerun. That missing rerun does not invalidate or remove the accepted hosted core DWS evidence and is not treated as a submission blocker.
+ReleaseProof now separates two questions:
+
+1. **Integrity:** are these exact document/page/provider artifacts untampered? Cryptographic hashes and provider receipts answer this.
+2. **Review identity:** is this still the same business evidence a human reviewed? A deterministic semantic key answers this: logical document, page, field path, normalized value, and bounding box within an explicit tolerance.
+
+Confidence remains a review-routing/admissibility signal and is intentionally not part of semantic evidence identity.
+
+The old manifest never becomes current after a source revision. Differential Reverification always mints a new current manifest and carries forward only still-grounded human authority.
 
 ## Canonical hosted evidence
 
-Core DWS evidence is anchored to GitHub Actions run `32215337912` at commit `d885ed31ebb8cc9449c450b0334c630c3b11f656`, artifact `9352133498`, digest `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`.
+The competition-critical hosted proof remains GitHub Actions run `32215337912` at commit `d885ed31ebb8cc9449c450b0334c630c3b11f656`, artifact `9352133498`, digest `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`.
 
-The later quota-aware Differential Reverification harness passed public CI (`32215419913`) but its hosted rerun `32215515505` received HTTP `402` on the first `/build`. Further live calls were stopped. The user then received Nutrient's Free-plan warning with two processing credits remaining. This is a **non-blocking quota limitation**, not converted into a mechanism failure or success.
+That run used the historical Processor `json-content` path. It is not relabelled as Data Extraction API acceptance.
 
-If Nutrient supplies additional event credits, the hosted differential workflow can be rerun without changing the mechanism. Enabling pay-as-you-go solely for this extra proof is not required.
+The later quota-aware Differential Reverification harness passed public CI (`32215419913`) but hosted run `32215515505` received HTTP `402` on the first `/build`. Further calls were stopped. This remains a non-blocking quota limitation, not converted into PASS or mechanism failure.
+
+## DWS-native v2 hosted status
+
+The following paths are implemented and contract-tested but remain **UNRUN** with hosted credentials:
+
+- Processor OCR/flatten canonicalization;
+- Processor page isolation for canonical page hashes;
+- Data Extraction `/extraction/extract`;
+- DWS Viewer review flow;
+- Processor `/sign`.
+
+No hosted PASS is claimed for these paths until a real acceptance run succeeds.
 
 ## Public production evidence
 
-Dedicated Vercel project `evidencebound-releaseproof-dws` (`prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`) reached READY. Production alias `https://evidencebound-releaseproof-dws.vercel.app` serves the accepted judge paths. Canonical production revision: `dpl_DgptupzTPrqx9HsySqWtwenmUNoA`.
+Previously accepted Vercel project: `evidencebound-releaseproof-dws` (`prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`). Historical production deployment: `dpl_DgptupzTPrqx9HsySqWtwenmUNoA`.
 
-The Vercel deployment is explicitly an `EVIDENCE_SURFACE`; executable mechanism source remains in this repository. The public service has no route that invokes Nutrient and stores no Nutrient credential.
+After this refactor merges, production acceptance must be rerun before the refactored code is classified as production PASS.
 
-Sanitized hosted-DWS acceptance receipts are retained in GitHub issue #3. API credentials and extracted document text are excluded.
+## IP / prior-art boundary
+
+ReleaseProof does not claim invention of provenance graphs, version-aware approvals, dependency invalidation, ontologies, or knowledge graphs. It does not copy OntoGuard ontology schemas, proprietary algorithms, policy language, implementation details, or product claims.
+
+The independently developed ReleaseProof contribution is the DWS-grounded semantic review-continuity and selective invalidation mechanism. EvidenceBound Core transfer candidates are limited to generic typed evidence identity, authority binding, explicit dependency edges, deterministic equivalence, and blast-radius semantics.
