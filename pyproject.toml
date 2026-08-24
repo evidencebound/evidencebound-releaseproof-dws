@@ -19,4 +19,4 @@ testpaths = ["tests"]
 addopts = "-q"
 
 [tool.vercel]
-entrypoint = "releaseproof.public_app:app"
+entrypoint = "main:app"
