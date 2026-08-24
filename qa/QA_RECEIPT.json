@@ -7,6 +7,7 @@
     "stable_logical_finding_identity": "PASS",
     "frozen_equivalence_policy": "PASS",
     "authority_binding": "PASS",
+    "authority_binding_serialized_in_manifest": "PASS",
     "runtime_policy_drift_blocked": "PASS",
     "unknown_policy_version_fail_closed": "PASS",
     "legacy_review_exact_binding_only": "PASS",
@@ -23,10 +24,10 @@
     "nutrient_studio_schema_generation": "UNRUN_EXTERNAL_PRODUCT_STEP",
     "viewer_review_projection": "PASS_PROJECTION_TEST_HOSTED_UNRUN",
     "processor_sign_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
-    "compileall": "PASS_AT_FROZEN_POLICY_CODE_HEAD",
-    "controlled_demo": "PASS_AT_FROZEN_POLICY_CODE_HEAD",
-    "controlled_evaluation": "PASS_AT_FROZEN_POLICY_CODE_HEAD",
-    "local_http_judge_path": "PASS_AT_FROZEN_POLICY_CODE_HEAD",
+    "compileall": "PASS",
+    "controlled_demo": "PASS",
+    "controlled_evaluation": "PASS",
+    "local_http_judge_path": "PASS",
     "missing_nutrient_key_fail_closed": "PASS",
     "cross_document_review_replay_blocked": "PASS",
     "nutrient_repository_secret_gate": "PASS_HISTORICAL",
@@ -36,8 +37,8 @@
     "live_nutrient_dws_core": "PASS_HISTORICAL",
     "live_differential_reverification": "NON_BLOCKING_LIMITATION_QUOTA_402",
     "public_github_repo": "PASS",
-    "public_github_ci_frozen_policy_code_head": "PASS",
-    "public_github_ci_final_pr_head": "PENDING_FINAL_RUN_AFTER_DOCS_UI",
+    "public_github_ci_latest_behavioral_head": "PASS_RUN_32751455299",
+    "public_github_ci_final_truth_metadata_head": "PENDING_FINAL_RUN",
     "public_vercel_project": "PASS_HISTORICAL",
     "public_vercel_build": "PASS_HISTORICAL",
     "public_vercel_root": "PASS_HISTORICAL",
@@ -80,6 +81,7 @@
       "evidence_identities",
       "frozen_equivalence_policy"
     ],
+    "authority_binding_manifest_serialization": "EXPLICIT",
     "confidence_role": "ADMISSIBILITY_AND_REVIEW_ROUTING_NOT_SEMANTIC_IDENTITY",
     "integrity_role": "DOCUMENT_AND_PAGE_DIGESTS_PLUS_PROVIDER_RECEIPTS",
     "releaseproof_owned_layer": [
@@ -98,14 +100,14 @@
       "viewer_annotations_comments_layers",
       "processor_digital_signature"
     ],
-    "frozen_policy_code_head": "0ce305cdc08be6d1549a25f6812a5d27fbf7b2d9",
-    "frozen_policy_tests_per_python_lane": 56,
-    "frozen_policy_python_lanes": [
+    "latest_behavioral_green_head": "64df78da6dd3dcbb94bf699f5eb24558cee17091",
+    "latest_behavioral_tests_per_python_lane": 56,
+    "latest_behavioral_python_lanes": [
       "3.11",
       "3.12",
       "3.13"
     ],
-    "frozen_policy_ci_run_id": 32750626503
+    "latest_behavioral_ci_run_id": 32751455299
   },
   "live_dws_evidence": {
     "canonical_core_run_id": 32215337912,
@@ -147,7 +149,7 @@
     "nutrient_secret_in_vercel": "NOT_REQUIRED"
   },
   "retained_result_sha256": {
-    "controlled_demo": "62f7d391dac43a195d87c8e6a43929f2c41ad90b3b45e4c1f2772d7091ec05d0",
+    "controlled_demo": "98df85448fc365fde4dbccc76cd8876f3bc95227daf464fd80aa2721eb1c2c26",
     "evaluation": "683ca81f3146c9b30abff585f7f0eec409201fb98bb70a82ea29932bba15188f"
   },
   "ip_boundary": {
