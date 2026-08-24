@@ -1,9 +1,12 @@
 from dataclasses import replace
 
+import pytest
+
 from releaseproof.demo import load_demo_documents
 from releaseproof.dws import normalize_fixture
 from releaseproof.engine import build_manifest, differential_reverify, review_finding
 from releaseproof.model import (
+    EvidenceEquivalencePolicy,
     EvidenceIdentity,
     PageDigest,
     ReleaseState,
@@ -49,6 +52,21 @@ def _mismatch_docs(invoice_quantity: str, *, invoice_bytes: bytes = b"invoice"):
     )
 
 
+def _shift_invoice_quantity_bbox(docs, offset: float):
+    invoice = docs[0]
+    quantity = invoice.by_field()["quantity"]
+    shifted_citation = replace(
+        quantity.citation,
+        bounds=tuple(x + offset for x in quantity.citation.bounds),
+        evidence_slice_sha256=f"bbox-shift-{offset}",
+    )
+    shifted_fields = tuple(
+        replace(field, citation=shifted_citation) if field.field == "quantity" else field
+        for field in invoice.fields
+    )
+    return replace(invoice, document_sha256=f"invoice-shift-{offset}", fields=shifted_fields)
+
+
 def test_finding_id_is_stable_while_binding_changes_with_material_evidence():
     first = build_manifest(_mismatch_docs("100"))
     second = build_manifest(_mismatch_docs("99", invoice_bytes=b"invoice-v2"))
@@ -64,29 +82,80 @@ def test_review_survives_minor_bbox_jitter_but_not_material_bbox_move():
     finding = next(f for f in initial.findings if f.rule_id == "CROSS_DOCUMENT_MISMATCH")
     approved = review_finding(initial, finding.finding_id, "reviewer", "APPROVE_EXCEPTION", "checked")
 
-    invoice = docs[0]
-    quantity = invoice.by_field()["quantity"]
-    near_citation = replace(
-        quantity.citation,
-        bounds=tuple(x + 1.0 for x in quantity.citation.bounds),
-        evidence_slice_sha256="representation-changed-near",
-    )
-    near_fields = tuple(replace(f, citation=near_citation) if f.field == "quantity" else f for f in invoice.fields)
-    near_invoice = replace(invoice, document_sha256="new-document-sha", fields=near_fields)
+    near_invoice = _shift_invoice_quantity_bbox(docs, 1.0)
     near = differential_reverify(approved, (near_invoice, docs[1]), bbox_tolerance=2.0)
     assert finding.finding_id in near.preserved_review_ids
     assert near.current_manifest.release_state == ReleaseState.VERIFIED
 
-    far_citation = replace(
-        quantity.citation,
-        bounds=tuple(x + 5.0 for x in quantity.citation.bounds),
-        evidence_slice_sha256="representation-changed-far",
-    )
-    far_fields = tuple(replace(f, citation=far_citation) if f.field == "quantity" else f for f in invoice.fields)
-    far_invoice = replace(invoice, document_sha256="newer-document-sha", fields=far_fields)
+    far_invoice = _shift_invoice_quantity_bbox(docs, 5.0)
     far = differential_reverify(approved, (far_invoice, docs[1]), bbox_tolerance=2.0)
     assert finding.finding_id in far.invalidated_review_ids
     assert far.current_manifest.release_state == ReleaseState.REVIEW_REQUIRED
+
+
+def test_equivalence_policy_rejects_negative_bbox_tolerance():
+    with pytest.raises(ValueError, match="bbox_tolerance"):
+        EvidenceEquivalencePolicy(bbox_tolerance=-0.1)
+
+
+def test_review_freezes_equivalence_policy_and_authority_binding():
+    docs = _mismatch_docs("100")
+    initial = build_manifest(docs)
+    finding = next(f for f in initial.findings if f.rule_id == "CROSS_DOCUMENT_MISMATCH")
+    policy = EvidenceEquivalencePolicy(bbox_tolerance=2.0)
+    approved = review_finding(
+        initial,
+        finding.finding_id,
+        "reviewer",
+        "APPROVE_EXCEPTION",
+        "checked",
+        equivalence_policy=policy,
+    )
+    review = approved.reviews[0]
+    assert review.equivalence_policy == policy
+    assert review.authority_binding
+
+    wider = replace(review, equivalence_policy=EvidenceEquivalencePolicy(bbox_tolerance=5.0))
+    assert wider.authority_binding != review.authority_binding
+
+
+def test_old_review_cannot_be_reinterpreted_by_new_runtime_tolerance():
+    docs = _mismatch_docs("100")
+    initial = build_manifest(docs)
+    finding = next(f for f in initial.findings if f.rule_id == "CROSS_DOCUMENT_MISMATCH")
+    approved = review_finding(
+        initial,
+        finding.finding_id,
+        "reviewer",
+        "APPROVE_EXCEPTION",
+        "checked under tolerance 2",
+        equivalence_policy=EvidenceEquivalencePolicy(bbox_tolerance=2.0),
+    )
+
+    moved_invoice = _shift_invoice_quantity_bbox(docs, 4.0)
+    # Simulate a future runtime whose default/override is looser. Historical authority
+    # must still be evaluated under the policy frozen when the reviewer approved it.
+    result = differential_reverify(
+        approved,
+        (moved_invoice, docs[1]),
+        bbox_tolerance=10.0,
+    )
+    assert finding.finding_id in result.invalidated_review_ids
+    assert result.current_manifest.release_state == ReleaseState.REVIEW_REQUIRED
+
+
+def test_unknown_equivalence_policy_fails_closed():
+    docs = _mismatch_docs("100")
+    initial = build_manifest(docs)
+    finding = next(f for f in initial.findings if f.rule_id == "CROSS_DOCUMENT_MISMATCH")
+    approved = review_finding(initial, finding.finding_id, "reviewer", "APPROVE_EXCEPTION", "checked")
+    review = approved.reviews[0]
+    unknown = replace(
+        review,
+        equivalence_policy=replace(review.equivalence_policy, version="evidence-equivalence/999"),
+    )
+    rebuilt = build_manifest(docs, (unknown,))
+    assert rebuilt.release_state == ReleaseState.REVIEW_REQUIRED
 
 
 def test_page_7_change_does_not_invalidate_page_2_review():
