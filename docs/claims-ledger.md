@@ -17,7 +17,8 @@
 | stable logical finding ID is separate from changing semantic evidence binding | semantic reverification regression test | VERIFIED / public CI |
 | malformed/missing source grounding fails closed | normalizer tests | VERIFIED / public CI |
 | controlled fixtures are explicitly distinguishable from live DWS | provenance labels/UI/tests | VERIFIED / public CI |
-| retained `results/controlled-demo.json` and `results/evaluation.json` match current executable mechanism | retained-result parity tests | VERIFIED / public CI; merge gate requires GREEN current PR head |
+| retained `results/controlled-demo.json` and `results/evaluation.json` match current executable mechanism | retained-result parity tests | VERIFIED / public CI |
+| Vercel entrypoint maps to a real root module exposing the FastAPI `app` | regression test + successful CLI deployment | VERIFIED / public CI + production |
 | hosted DWS request reached real Processor `/build` using repository secret | historical live GitHub Actions | VERIFIED |
 | hosted Processor returned parseable grounded key/value content with bbox and confidence | historical hosted Actions + retained artifact | VERIFIED |
 | live response may omit documented `pageIndex`; ordered-page-position compatibility is provenance-labelled and malformed present indices fail closed | live diagnostic + public CI | VERIFIED |
@@ -31,9 +32,11 @@
 | Viewer finding/review maps to annotation + reviewer-specific layer/comment + named approved layer | deterministic projection contract | VERIFIED / hosted Viewer UNRUN |
 | release artifact can be sealed through Processor `/sign` adapter | contract test | VERIFIED / hosted signing UNRUN |
 | hosted Differential Reverification preserves review after non-material revision | live differential acceptance | NON-BLOCKING LIMITATION - QUOTA_402 |
-| public repository and Python 3.11/3.12/3.13 GitHub Actions matrix | GitHub repository / Actions | 56/56 PASS per lane at behavioral run `32751455299`; merge gate requires GREEN current PR head |
-| public Vercel evidence URL serves health/live-evidence/evaluation/demo paths | previous production acceptance | VERIFIED HISTORICALLY; refactor deployment requires new acceptance |
-| public Vercel service performs no runtime Nutrient calls | route surface + source + health contract | VERIFIED HISTORICALLY; recheck after deploy |
+| public repository Python 3.11/3.12/3.13 GitHub Actions matrix | GitHub Actions run `32757860664` | PASS on all three lanes |
+| current refactored Vercel evidence URL serves root/health/live-evidence/evaluation/demo | production deployment `dpl_7zdyqLmgv4PEyHxUPJkP6Dp3gDhn` | VERIFIED / HTTP 200 |
+| accepted Vercel deployment corresponds to entrypoint-fix main commit | Vercel deployment metadata | VERIFIED at `bd670240a681ad139921597ba10b534a570c07f4` |
+| public Vercel service performs no runtime Nutrient calls | route surface + health contract | VERIFIED on current refactored production |
+| accepted judge paths produced no runtime error clusters during acceptance | Vercel runtime errors/logs | VERIFIED |
 | Differential Reverification addresses a real corrected/re-issued packet workflow | Nutrient Solutions Engineering field feedback from customer projects | EXTERNAL FIELD OBSERVATION, not a market-size or roadmap claim |
 | mechanism reduces real reviewer time | field study | UNVERIFIED |
 | frozen-policy mechanism establishes SOC 2/FDA/ISO compliance or legal non-repudiation | broader operational/regulatory assessment | NOT CLAIMED |
@@ -87,9 +90,21 @@ No hosted PASS is claimed for these paths until a real acceptance run succeeds.
 
 ## Public production evidence
 
-Previously accepted Vercel project: `evidencebound-releaseproof-dws` (`prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`). Historical production deployment: `dpl_DgptupzTPrqx9HsySqWtwenmUNoA`.
+Current accepted Vercel project: `evidencebound-releaseproof-dws` (`prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`).
 
-After this refactor merges, production acceptance must be rerun before the refactored code is classified as production PASS.
+Current accepted refactored production deployment:
+
+- deployment id: `dpl_7zdyqLmgv4PEyHxUPJkP6Dp3gDhn`;
+- immutable URL: `https://evidencebound-releaseproof-9un6wo3iu.vercel.app`;
+- production alias: `https://evidencebound-releaseproof-dws.vercel.app`;
+- deployed commit: `bd670240a681ad139921597ba10b534a570c07f4`;
+- deployment state: `READY`;
+- `/`, `/health`, `/api/demo`, `/api/evaluation`, `/api/live-evidence`: HTTP 200 PASS;
+- runtime error clusters on accepted judge paths during acceptance: none observed.
+
+The root judge surface visibly contains the Frozen Authority Policy and DWS-native v2 truth boundary, confirming that this is the refactored revision rather than the previous production artifact.
+
+See `docs/production-acceptance-2026-08-24.md`.
 
 ## Compliance claim boundary
 
