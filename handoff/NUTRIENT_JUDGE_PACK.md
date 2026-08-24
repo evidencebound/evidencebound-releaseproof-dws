@@ -32,8 +32,6 @@ Cryptographic hashes remain integrity/provenance signals, not semantic identity.
 
 ## Frozen authority against silent policy drift
 
-A historical review must not be reinterpreted under a later runtime's comparison defaults.
-
 Every new semantic `HumanReview` stores an `EvidenceEquivalencePolicy` with:
 
 - policy version;
@@ -41,52 +39,42 @@ Every new semantic `HumanReview` stores an `EvidenceEquivalencePolicy` with:
 - value-normalization version;
 - bbox metric version.
 
-Its `authority_binding` digest commits to the finding, reviewer decision, reviewer identity, rationale, reviewed evidence identities and frozen policy.
+Its `authority_binding` commits to the finding, reviewer decision, reviewer identity, rationale, reviewed evidence identities and frozen policy. The binding is serialized into the current release manifest.
 
-Differential Reverification evaluates the review using that stored historical policy. A later runtime tolerance of `10.0` cannot rescue a review that was originally granted under tolerance `2.0` when evidence moved by `4.0`.
+Differential Reverification evaluates a historical review using the policy stored when that authority was granted. A later runtime tolerance of `10.0` cannot rescue a review originally granted under tolerance `2.0` when evidence moved by `4.0`.
 
-Unknown policy versions fail closed to `REVIEW_REQUIRED`. Legacy reviews without a frozen policy are not assigned inferred tolerances and remain exact-binding only.
-
-This is an auditability and deterministic replay mechanism. It is not presented as proof of SOC 2, FDA 21 CFR Part 11, ISO compliance/certification or legal non-repudiation.
+Unknown policy versions fail closed to `REVIEW_REQUIRED`. Legacy reviews without a frozen policy remain exact-binding only.
 
 **Memory hook:** “The human decision carries its own rules of continued validity.”
 
-See `docs/frozen-authority-policy.md`.
+This is an auditability and deterministic replay mechanism. It is not presented as proof of SOC 2, FDA 21 CFR Part 11, ISO compliance/certification or legal non-repudiation.
 
-## DWS-native refactor — implemented and CI verified
+## DWS-native refactor
 
-The 2026-08-24 refactor incorporates the platform architecture review received from Nutrient while preserving the ReleaseProof-owned mechanism.
-
-Implemented:
+Implemented and CI verified:
 
 - stable finding IDs independent of extraction bytes;
 - structured semantic `EvidenceIdentity` separate from SHA-256 integrity;
 - bbox-tolerant evidence equivalence;
 - frozen `EvidenceEquivalencePolicy` inside new human reviews;
-- immutable `authority_binding` over review evidence and policy;
+- explicit `authority_binding` serialization;
 - fail-closed handling of unsupported historical policy versions;
-- confidence kept as review/admissibility metadata rather than semantic identity;
+- confidence as review/admissibility metadata rather than semantic identity;
 - page-level digests and changed-page blast-radius reporting;
 - Processor-native OCR + flatten canonicalization adapter;
-- Processor-native page isolation adapter using `parts[].pages`;
-- Data Extraction `/extraction/extract` transport using externally supplied JSON Schema and `citationsEnabled: true`;
-- Data Extraction normalizer for provider `pageIndex`, `pageNumber`, bbox, confidence, `source_bboxes`, and optional reading order;
-- Studio/external schema truth boundary through `NUTRIENT_EXTRACTION_SCHEMA_JSON` rather than claiming a repository schema was Studio-generated;
-- Viewer review projection to finding annotation, reviewer-specific layer/comment, and named approved layer;
-- Processor `/sign` adapter for a standard signed PDF release artifact path;
-- no local OCR, PDF splitter, ontology engine, graph database, embeddings, or LLM evidence matcher.
+- Processor-native page isolation using `parts[].pages`;
+- Data Extraction `/extraction/extract` transport with external JSON Schema and `citationsEnabled: true`;
+- Data Extraction grounding normalizer;
+- Studio/external-schema truth boundary;
+- Viewer review projection to finding annotation, reviewer-specific layer/comment and named approved layer;
+- Processor `/sign` adapter;
+- no local OCR, PDF splitter, ontology engine, graph database, embeddings or LLM evidence matcher.
 
-Verification at frozen-authority code head, GitHub Actions run `32750626503`:
+Semantic-refactor merge commit: `3584e577f62f65aec2f977028970c78d15e06c18`.
 
-- Python 3.11: **56/56 PASS**;
-- Python 3.12: **56/56 PASS**;
-- Python 3.13: **56/56 PASS**;
-- compileall: **PASS**;
-- synthetic three-PDF generation/validation: **PASS**;
-- render-equivalent non-material revision gate: **PASS**;
-- source snapshot artifact: **PASS**.
+Vercel-entrypoint fix merge commit: `bd670240a681ad139921597ba10b534a570c07f4`.
 
-Documentation changes after that run require one final PR-head CI before merge.
+GitHub Actions run `32757860664` passed on Python 3.11, 3.12 and 3.13, including pytest, compileall, synthetic three-PDF validation, render-equivalent non-material revision validation and source snapshot.
 
 ## Hosted truth boundary
 
@@ -110,7 +98,7 @@ DWS receipt hashes:
 
 The generated packet intended the same Shipment ID across documents. Hosted Processor extraction returned divergent Shipment ID strings. ReleaseProof detected the disagreement and returned `REVIEW_REQUIRED`. This is evidence of fail-closed reconciliation, not a measured Nutrient error-rate claim.
 
-The live Processor response omitted documented `pageIndex` while retaining ordered `pages[]` plus grounded key/value boxes. The historical compatibility path uses ordered page position only when `pageIndex` is absent and labels that provenance explicitly.
+The historical live Processor response omitted documented `pageIndex` while retaining ordered `pages[]` plus grounded key/value boxes. The compatibility path uses ordered page position only when `pageIndex` is absent and labels that provenance explicitly.
 
 This accepted historical run is **not** relabelled as Data Extraction API acceptance.
 
@@ -122,13 +110,13 @@ This accepted historical run is **not** relabelled as Data Extraction API accept
 - Viewer review flow: **UNRUN**;
 - Processor `/sign`: **UNRUN**.
 
-All are implemented as tested contracts, but no hosted PASS is claimed until a credentialed acceptance run occurs.
+All are implemented as tested contracts. No hosted PASS is claimed until a credentialed acceptance run succeeds.
 
 ## Differential Reverification proof
 
 ### Controlled mechanism — PASS
 
-The controlled suite now verifies:
+The controlled suite verifies:
 
 - blanket whole-file baseline preserves `0/1` old review after a non-material file revision;
 - Differential Reverification preserves `1/1` when semantic evidence identity still reproduces;
@@ -142,9 +130,9 @@ The controlled suite now verifies:
 - a page-7 integrity change can leave a page-2 review valid;
 - current state is always reminted into a new manifest after source revision.
 
-### Hosted Differential Reverification rerun — NON-BLOCKING LIMITATION: QUOTA_402
+### Hosted Differential Reverification — NON-BLOCKING LIMITATION: QUOTA_402
 
-The earlier hosted differential harness was optimized from seven calls to four by reusing accepted base evidence. A subsequent run received HTTP `402` on the first Processor `/build` request. Therefore:
+The quota-aware harness passed public CI, but hosted run `32215515505` received HTTP `402` on the first Processor `/build` request. Therefore:
 
 - hosted core Processor integration: **PASS**;
 - controlled Differential Reverification: **PASS**;
@@ -152,32 +140,41 @@ The earlier hosted differential harness was optimized from seven calls to four b
 
 Do not claim hosted Differential Reverification PASS unless a new hosted run actually succeeds.
 
-## Public judge URL
+## Public judge URL — CURRENT REFACTORED PRODUCTION PASS
 
 `https://evidencebound-releaseproof-dws.vercel.app`
 
-The deployed service is intentionally an `EVIDENCE_SURFACE`. It exposes retained live receipts and controlled mechanism evidence without exposing Nutrient credentials or consuming provider quota from judge/browser traffic.
+Accepted deployment:
 
-Previously accepted production revision:
-`dpl_DgptupzTPrqx9HsySqWtwenmUNoA`
+- deployment id: `dpl_7zdyqLmgv4PEyHxUPJkP6Dp3gDhn`;
+- immutable URL: `https://evidencebound-releaseproof-9un6wo3iu.vercel.app`;
+- deployed Git commit: `bd670240a681ad139921597ba10b534a570c07f4`;
+- state: **READY**;
+- target: production;
+- region: `iad1`.
 
-Previously accepted endpoints:
+Production acceptance on 2026-08-24:
 
 - `/`: **HTTP 200 PASS**;
 - `/health`: **HTTP 200 PASS**;
 - `/api/live-evidence`: **HTTP 200 PASS**;
 - `/api/evaluation`: **HTTP 200 PASS**;
-- `/api/demo`: **HTTP 200 PASS**.
+- `/api/demo`: **HTTP 200 PASS**;
+- runtime error clusters on accepted judge paths: **none observed**.
 
-This production evidence is historical until the refactor is merged and a new production acceptance is recorded.
+The root surface visibly includes the Frozen Authority Policy and DWS-native v2 truth boundary. `/health` reports `dws_native_v2_hosted=UNRUN`, confirming that the refactored public code is live without misrepresenting the unexecuted credentialed provider paths.
+
+The deployed service remains an `EVIDENCE_SURFACE`. It exposes retained live receipts and controlled mechanism evidence without exposing Nutrient credentials or consuming provider quota from judge/browser traffic.
+
+See `docs/production-acceptance-2026-08-24.md`.
 
 ## Prize narrative
 
-**Progress:** public source, live DWS-backed historical processing evidence, source-grounded receipts, deterministic semantic review continuity, frozen historical review policy, passing public CI, and a live evidence surface.
+**Progress:** public source, historical live DWS-backed processing evidence, source-grounded receipts, deterministic semantic review continuity, frozen historical review policy, passing public CI and a currently accepted refactored production evidence surface.
 
 **Concept:** a human approval should neither survive blindly because a document is “the same file” nor be reset blindly because any byte changed. ReleaseProof separates integrity from semantic review identity, then freezes the comparison policy inside the human review so future software changes cannot silently redefine what that approval meant.
 
-**Feasibility:** the core hosted Processor integration already works end to end. The DWS-native architecture removes duplicated platform work and keeps the ReleaseProof-owned layer focused on cross-document reconciliation, human authority, policy-bound continuity, and differential invalidation.
+**Feasibility:** the core hosted Processor integration already works end to end. The DWS-native architecture removes duplicated platform work and keeps the ReleaseProof-owned layer focused on cross-document reconciliation, human authority, policy-bound continuity and differential invalidation.
 
 **Sponsor memory hook:** “After the packet changes, prove which human review is still grounded in current evidence under the rules the reviewer actually approved, and which one is not.”
 
@@ -195,7 +192,6 @@ No patent novelty claim is made.
 - new v2 Data Extraction hosted acceptance: **UNRUN**;
 - Viewer hosted review integration: **UNRUN**;
 - `/sign` hosted acceptance: **UNRUN**;
-- refactored production deployment acceptance: **UNRUN**;
 - real reviewer-time/customer metrics: **UNVERIFIED**;
 - regulatory compliance/certification: **NOT CLAIMED**.
 
@@ -204,12 +200,12 @@ No patent novelty claim is made.
 - public judge hero;
 - retained hosted DWS run/receipt evidence;
 - real hosted mismatch -> `REVIEW_REQUIRED`;
-- semantic review key visualization: page + field path + normalized value + bbox tolerance;
-- frozen policy visualization: review carries `evidence-equivalence/1`, tolerance and normalization version;
+- semantic review key: page + field path + normalized value + bbox tolerance;
+- frozen policy: review carries `evidence-equivalence/1`, tolerance and normalization version;
 - silent-policy-drift demo: review approved at tolerance 2.0, runtime later uses 10.0, 4px move still invalidates;
 - non-material revision preserving review into a new manifest;
 - material evidence revision invalidating old authority;
 - page-local blast-radius case;
 - clear boundary between historical hosted PASS and new v2 UNRUN integrations.
 
-See `README.md`, `docs/live-dws-evidence.md`, `docs/vercel-production-evidence.md`, `docs/frozen-authority-policy.md`, `docs/evidencebound-core-transfer.md`, and `qa/QA_RECEIPT.json`.
+See `README.md`, `docs/live-dws-evidence.md`, `docs/vercel-production-evidence.md`, `docs/production-acceptance-2026-08-24.md`, `docs/frozen-authority-policy.md`, `docs/evidencebound-core-transfer.md`, and `qa/QA_RECEIPT.json`.
