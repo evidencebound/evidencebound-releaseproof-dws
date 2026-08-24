@@ -271,6 +271,20 @@ class HumanReview:
             ),
         })
 
+    def payload(self) -> dict[str, Any]:
+        return {
+            "finding_id": self.finding_id,
+            "finding_binding": self.finding_binding,
+            "decision": self.decision,
+            "reviewer": self.reviewer,
+            "rationale": self.rationale,
+            "evidence_identities": [identity.payload() for identity in self.evidence_identities],
+            "equivalence_policy": (
+                self.equivalence_policy.payload() if self.equivalence_policy is not None else None
+            ),
+            "authority_binding": self.authority_binding,
+        }
+
 
 @dataclass(frozen=True, slots=True)
 class ReleaseManifest:
@@ -288,7 +302,7 @@ class ReleaseManifest:
             "policy_version": self.policy_version,
             "documents": [asdict(x) for x in self.documents],
             "findings": [asdict(x) for x in self.findings],
-            "reviews": [asdict(x) for x in self.reviews],
+            "reviews": [x.payload() for x in self.reviews],
             "release_state": self.release_state.value,
         }
 
