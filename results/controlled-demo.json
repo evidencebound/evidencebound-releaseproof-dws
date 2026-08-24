@@ -21,7 +21,8 @@
           "page_hash_source": "",
           "page_sha256": "",
           "reading_order": null,
-          "source_evidence": []
+          "source_evidence": [],
+          "value_normalization": "nfkc-whitespace/1"
         }
       ],
       "field": "quantity",
@@ -33,7 +34,7 @@
     }
   ],
   "initial_state": "REVIEW_REQUIRED",
-  "manifest_sha256": "59ee0ceaf6de1b1c789f945e6a8ac10c9710cef11443e08dffc15a9d429a0e65",
+  "manifest_sha256": "e9ea09be1b89ec9cf7c97d914d067a200cc3aaca8178d7c510b92e428b2cd91a",
   "material_revision": {
     "changed_documents": [
       "shipping"
