@@ -1,6 +1,6 @@
 # ReleaseProof — Differential Reverification with Nutrient DWS
 
-**One-line pitch:** After a document packet changes, ReleaseProof reprocesses current source-grounded evidence and preserves prior human authority only when the same logical finding is reproduced from semantically equivalent evidence; otherwise the old review cannot release the new packet.
+**One-line pitch:** After a document packet changes, ReleaseProof reprocesses current source-grounded evidence and preserves prior human authority only when the same logical finding is reproduced from semantically equivalent evidence under the exact equivalence policy frozen when that authority was granted; otherwise the old review cannot release the new packet.
 
 ## Submission readiness — READY
 
@@ -17,6 +17,7 @@ ReleaseProof owns the layer Nutrient does not provide:
 - cross-document reconciliation;
 - stable logical finding identity;
 - human authority bound to the exact reviewed evidence;
+- frozen rules for continued validity of that authority;
 - Differential Reverification after source change;
 - selective approval invalidation and carry-forward;
 - current release lifecycle.
@@ -26,6 +27,27 @@ The mechanism does not treat a whole-document hash as semantic identity. Cryptog
 `document + page + field path + normalized value + bounding box within tolerance`
 
 Confidence remains an admissibility/review-routing signal. It is deliberately not part of semantic evidence identity.
+
+## Frozen human authority policy
+
+A human review must not be reinterpreted later under whatever comparison defaults happen to exist in a newer runtime.
+
+Every new semantic `HumanReview` therefore stores a frozen `EvidenceEquivalencePolicy` containing:
+
+- policy version;
+- bbox tolerance;
+- value-normalization version;
+- bbox metric version.
+
+The review exposes an `authority_binding` digest over the finding, decision, reviewer, rationale, reviewed evidence identities and the frozen policy. Changing any of these inputs changes the authority binding.
+
+Differential Reverification evaluates historical authority under the review's stored policy, not the runtime's current default. A review created at bbox tolerance `2.0` cannot later be made valid by changing the runtime tolerance to `10.0`.
+
+Unsupported policy versions fail closed to `REVIEW_REQUIRED`. Legacy reviews without a frozen policy are not assigned a guessed tolerance and remain exact-binding only.
+
+This supports deterministic historical replay and explicit policy provenance. It does **not**, by itself, claim legal non-repudiation or compliance/certification with SOC 2, FDA 21 CFR Part 11, ISO or other regulatory frameworks.
+
+See `docs/frozen-authority-policy.md`.
 
 ## DWS-native v2 architecture
 
@@ -97,7 +119,8 @@ The deterministic mechanism demonstrates:
 - non-material file revision -> a new manifest while semantically equivalent evidence preserves the review;
 - confidence-only drift within the same review-required class -> semantic identity remains unchanged;
 - material normalized-value or bbox change -> old review invalidated;
-- unrelated page change -> page-local blast radius rather than blanket document invalidation.
+- unrelated page change -> page-local blast radius rather than blanket document invalidation;
+- historical review policy cannot be silently loosened or tightened by a later runtime default.
 
 Controlled fixtures are explicitly labelled `controlled-fixture:nutrient-shaped` and are never presented as live DWS execution.
 
@@ -125,7 +148,9 @@ The controlled evaluation verifies the mechanism:
 - a whole-file non-material revision causes a blanket-version baseline to preserve `0/1` prior reviews while Differential Reverification preserves `1/1`;
 - a confidence-only drift does not masquerade as a semantic evidence change;
 - a material reviewed evidence value change invalidates the old review and returns the packet to `REVIEW_REQUIRED`;
-- bbox movement within configured tolerance preserves authority, while a movement outside tolerance invalidates it;
+- bbox movement within the review's frozen tolerance preserves authority, while a movement outside that historical tolerance invalidates it;
+- changing a later runtime bbox default cannot reinterpret prior policy-bound authority;
+- unsupported equivalence-policy versions fail closed;
 - page-level digests can localize changed-page blast radius.
 
 A hosted Differential Reverification acceptance harness was implemented earlier. The account subsequently returned HTTP `402` on the first Processor `/build` request. Therefore:
@@ -150,11 +175,11 @@ A new production acceptance must be recorded after this refactor reaches `main`;
 
 ## Verification matrix
 
-At refactor head before documentation-only updates:
+Frozen-authority code head GitHub Actions run `32750626503`:
 
-- Python 3.11 GitHub Actions: **49/49 PASS**;
-- Python 3.12 GitHub Actions: **49/49 PASS**;
-- Python 3.13 GitHub Actions: **49/49 PASS**;
+- Python 3.11 GitHub Actions: **56/56 PASS**;
+- Python 3.12 GitHub Actions: **56/56 PASS**;
+- Python 3.13 GitHub Actions: **56/56 PASS**;
 - compile gate: **PASS**;
 - synthetic three-PDF gate: **PASS**;
 - render-equivalent non-material revision gate: **PASS**;
@@ -167,4 +192,4 @@ At refactor head before documentation-only updates:
 - hosted Differential Reverification rerun: **NON-BLOCKING LIMITATION — QUOTA_402**;
 - real reviewer-time or customer metrics: **UNVERIFIED**.
 
-See `docs/live-dws-evidence.md`, `docs/vercel-production-evidence.md`, `docs/claims-ledger.md`, `docs/evidencebound-core-transfer.md`, `qa/QA_RECEIPT.json`, and `handoff/NUTRIENT_JUDGE_PACK.md`.
+See `docs/live-dws-evidence.md`, `docs/vercel-production-evidence.md`, `docs/claims-ledger.md`, `docs/frozen-authority-policy.md`, `docs/evidencebound-core-transfer.md`, `qa/QA_RECEIPT.json`, and `handoff/NUTRIENT_JUDGE_PACK.md`.
