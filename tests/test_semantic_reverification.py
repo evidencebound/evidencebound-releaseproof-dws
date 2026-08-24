@@ -120,3 +120,32 @@ def test_existing_nonmaterial_fixture_still_preserves_review_into_new_manifest()
     result = differential_reverify(approved, load_demo_documents(False, True))
     assert finding.finding_id in result.preserved_review_ids
     assert result.current_manifest.manifest_sha256 != approved.manifest_sha256
+
+
+def test_reviewed_slice_fixture_changes_semantic_value_not_only_confidence():
+    original = load_demo_documents()[0].by_field()["quantity"]
+    changed = load_demo_documents(reviewed_invoice_changed=True)[0].by_field()["quantity"]
+    assert original.evidence_identity.normalized_value != changed.evidence_identity.normalized_value
+
+
+def test_confidence_only_drift_does_not_change_semantic_review_identity():
+    docs = load_demo_documents()
+    initial = build_manifest(docs)
+    finding = next(f for f in initial.findings if f.rule_id == "LOW_CONFIDENCE")
+    approved = review_finding(initial, finding.finding_id, "reviewer", "APPROVE_EXCEPTION", "checked source")
+    invoice = docs[0]
+    quantity = invoice.by_field()["quantity"]
+    drifted_citation = replace(
+        quantity.citation,
+        confidence=0.85,
+        evidence_slice_sha256="confidence-drift-only",
+    )
+    drifted_fields = tuple(
+        replace(field, citation=drifted_citation) if field.field == "quantity" else field
+        for field in invoice.fields
+    )
+    drifted_invoice = replace(invoice, document_sha256="rescan-sha", fields=drifted_fields)
+    result = differential_reverify(approved, (drifted_invoice,) + docs[1:])
+    assert finding.finding_id in result.preserved_review_ids
+    assert result.invalidated_review_ids == ()
+    assert result.current_manifest.release_state == ReleaseState.VERIFIED
