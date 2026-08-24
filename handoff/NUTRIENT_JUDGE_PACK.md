@@ -4,136 +4,178 @@
 
 **Canonical project name:** ReleaseProof
 
-**One-line pitch:** When a document packet changes, ReleaseProof reprocesses the current evidence and preserves a human exception only if the exact source-grounded finding binding still reproduces.
+**One-line pitch:** When a document packet changes, ReleaseProof reprocesses current source-grounded evidence and preserves human authority only if the same logical finding still reproduces from semantically equivalent evidence.
 
-**Invention:** Differential Reverification with evidence-scoped human review and reminted release manifests.
+**Invention:** Differential Reverification with evidence-scoped human authority and reminted current release state.
 
-**Submission status:** **READY** except final video / Devpost form work. No paid Nutrient plan is required for the accepted competition path.
+**Submission status:** **READY** except final video / Devpost form work. No paid Nutrient plan is required for the already accepted competition path.
 
-## Implemented and verified truth
+## Product boundary
 
-- dedicated public competition repository;
-- three-document trade packet workflow;
-- Nutrient hosted Processor `/build` transport;
-- strict `json-content` / key-value source-grounding normalizer;
-- compatibility with the observed hosted response that omitted documented `pageIndex`, using explicit ordered-page-position provenance rather than silent guessing;
-- deterministic mismatch/missing/low-confidence findings;
-- scoped human review binding;
-- full packet/receipt/decision release manifest;
-- historical manifest invalidation after source change;
-- Differential Reverification selectively preserves unchanged review evidence in the controlled mechanism;
-- public GitHub Actions matrix on Python 3.11 / 3.12 / 3.13;
-- current public CI: **34/34 tests PASS per Python lane**;
-- live hosted DWS processing of three generated PDFs with no fixture fallback;
-- live field-level page/bbox/confidence/evidence-slice verification;
-- live current manifest and DWS response receipt hashes;
-- real live `CROSS_DOCUMENT_MISMATCH` routed to `REVIEW_REQUIRED` rather than silently released;
-- dedicated public Vercel judge evidence surface with production acceptance.
+Nutrient owns document primitives: canonical document processing, OCR/flatten/page operations, structured extraction and source grounding, Viewer review primitives, and signed PDF tooling.
 
-## Public judge URL — PASS
+ReleaseProof owns:
 
-`https://evidencebound-releaseproof-dws.vercel.app`
+- cross-document reconciliation;
+- stable logical finding identity;
+- human authority binding;
+- Differential Reverification;
+- selective invalidation after evidence change;
+- approval lifecycle and current release state.
 
-Dedicated Vercel project:
+The current semantic review key is deliberately small and auditable:
 
-- project: `evidencebound-releaseproof-dws`;
-- project ID: `prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`;
-- accepted production revision: `dpl_DgptupzTPrqx9HsySqWtwenmUNoA`;
-- build: **PASS**;
-- deployment state: **READY**;
-- `/`: **HTTP 200 PASS**;
-- `/health`: **HTTP 200 PASS**;
-- `/api/live-evidence`: **HTTP 200 PASS**;
-- `/api/evaluation`: **HTTP 200 PASS**;
-- `/api/demo`: **HTTP 200 PASS**;
-- runtime application errors during acceptance: **none observed**.
+`logical document + page + field path + normalized value + bbox within tolerance`
 
-The deployed service is explicitly an `EVIDENCE_SURFACE`. It exposes retained live receipts and controlled mechanism evidence but has no endpoint that invokes Nutrient. No Nutrient API key is stored in Vercel. Executable mechanism source remains in the public repository. This avoids allowing a judge/crawler to consume the exhausted processing quota.
+Cryptographic hashes remain integrity/provenance signals, not semantic identity.
 
-## Canonical hosted DWS proof
+## DWS-native refactor — implemented and CI verified
+
+The 2026-08-24 refactor incorporates the platform architecture review received from Nutrient while preserving the ReleaseProof-owned mechanism.
+
+Implemented:
+
+- stable finding IDs independent of extraction bytes;
+- structured semantic `EvidenceIdentity` separate from SHA-256 integrity;
+- bbox-tolerant evidence equivalence;
+- confidence kept as review/admissibility metadata rather than semantic identity;
+- page-level digests and changed-page blast-radius reporting;
+- Processor-native OCR + flatten canonicalization adapter;
+- Processor-native page isolation adapter using `parts[].pages`;
+- Data Extraction `/extraction/extract` transport using externally supplied JSON Schema and `citationsEnabled: true`;
+- Data Extraction normalizer for provider `pageIndex`, `pageNumber`, bbox, confidence, `source_bboxes`, and optional reading order;
+- Studio/external schema truth boundary through `NUTRIENT_EXTRACTION_SCHEMA_JSON` rather than claiming a repository schema was Studio-generated;
+- Viewer review projection to finding annotation, reviewer-specific layer/comment, and named approved layer;
+- Processor `/sign` adapter for a standard signed PDF release artifact path;
+- no local OCR, PDF splitter, ontology engine, graph database, embeddings, or LLM evidence matcher.
+
+Verification at the refactor code head:
+
+- Python 3.11: **49/49 PASS**;
+- Python 3.12: **49/49 PASS**;
+- Python 3.13: **49/49 PASS**;
+- compileall: **PASS**;
+- synthetic three-PDF generation/validation: **PASS**;
+- render-equivalent non-material revision gate: **PASS**;
+- source snapshot artifact: **PASS**.
+
+The documentation commits after that code head require one final CI run before merge.
+
+## Hosted truth boundary
+
+### Historical hosted Processor core — LIVE PASS
 
 GitHub Actions run: `32215337912`
 
 Commit: `d885ed31ebb8cc9449c450b0334c630c3b11f656`
 
 Artifact:
-- id: `9352133498`
-- digest: `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`
+- id: `9352133498`;
+- digest: `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`.
 
 Release manifest:
 `a5716cc3f5580a6dde1e21d4199675bb65f2b46e92b7b65a334f05a1d57663cc`
 
 DWS receipt hashes:
-- invoice: `f7f472032528a8b874e3de2d48344d9274cde6a448f29530e8ac0f12acc8e7c6`
-- shipping: `cef24668bba04f610450eb87fdf873bcdcf45b1e6a9b226865857604f608c135`
-- certificate: `8d0b635918e4d42a2f85584a51b6ea52c0f36222b73322242d761317e5d3c4ab`
+- invoice: `f7f472032528a8b874e3de2d48344d9274cde6a448f29530e8ac0f12acc8e7c6`;
+- shipping: `cef24668bba04f610450eb87fdf873bcdcf45b1e6a9b226865857604f608c135`;
+- certificate: `8d0b635918e4d42a2f85584a51b6ea52c0f36222b73322242d761317e5d3c4ab`.
 
-The generated source packet intended the same Shipment ID across documents. Hosted extraction returned divergent Shipment ID strings. ReleaseProof detected the disagreement and generated `REVIEW_REQUIRED`. Treat this as evidence of fail-closed reconciliation, **not** as a measured Nutrient error-rate or provider-bug claim.
+The generated packet intended the same Shipment ID across documents. Hosted Processor extraction returned divergent Shipment ID strings. ReleaseProof detected the disagreement and returned `REVIEW_REQUIRED`. This is evidence of fail-closed reconciliation, not a measured Nutrient error-rate claim.
+
+The live Processor response omitted documented `pageIndex` while retaining ordered `pages[]` plus grounded key/value boxes. The historical compatibility path uses ordered page position only when `pageIndex` is absent and labels that provenance explicitly.
+
+This accepted historical run is **not** relabelled as Data Extraction API acceptance.
+
+### New v2 hosted paths
+
+- Processor OCR/flatten canonicalization: **UNRUN**;
+- Processor page isolation for canonical per-page hash: **UNRUN**;
+- Data Extraction `/extraction/extract`: **UNRUN**;
+- Viewer review flow: **UNRUN**;
+- Processor `/sign`: **UNRUN**.
+
+All are implemented as tested contracts, but no hosted PASS is claimed until a credentialed acceptance run occurs.
 
 ## Differential Reverification proof
 
 ### Controlled mechanism — PASS
 
-Retained evaluation:
-- prior reviews: 1;
-- blanket whole-file baseline preserves 0/1 after a non-material file revision;
-- Differential Reverification preserves 1/1 when the reviewed finding binding is unchanged;
-- when the reviewed evidence slice changes, 0/1 is preserved and current state returns to `REVIEW_REQUIRED`.
+The controlled suite now verifies:
 
-### Hosted DWS differential rerun — NON-BLOCKING LIMITATION: QUOTA_402
+- blanket whole-file baseline preserves `0/1` old review after a non-material file revision;
+- Differential Reverification preserves `1/1` when semantic evidence identity still reproduces;
+- confidence-only drift does not incorrectly become a semantic change;
+- bbox drift within tolerance preserves review;
+- bbox drift outside tolerance invalidates review;
+- a material normalized-value change invalidates prior review;
+- a page-7 integrity change can leave a page-2 review valid;
+- current state is always reminted into a new manifest after source revision.
 
-A hosted acceptance harness creates a byte-different but render-equivalent invoice revision, uses a clearly labelled synthetic acceptance-harness review, reprocesses the revised invoice through DWS, and runs `differential_reverify()`.
+### Hosted Differential Reverification rerun — NON-BLOCKING LIMITATION: QUOTA_402
 
-The first implementation redundantly reprocessed the base packet and reached HTTP `402` before the revised-document result. It was redesigned to reuse the accepted base DWS evidence, reducing total hosted calls from seven to four. That quota-aware harness passed public CI in run `32215419913`.
+The earlier hosted differential harness was optimized from seven calls to four by reusing accepted base evidence. A subsequent run received HTTP `402` on the first Processor `/build` request. Therefore:
 
-Hosted rerun `32215515505` then received HTTP `402` on the first `/build`; the diagnostic call also returned `402`. The user later received Nutrient's Free-plan warning showing two processing credits remaining. Further provider calls were stopped rather than spending more quota.
+- hosted core Processor integration: **PASS**;
+- controlled Differential Reverification: **PASS**;
+- hosted Differential Reverification proof: **NON-BLOCKING LIMITATION — QUOTA_402**.
 
-This does **not** block submission readiness. The competition-critical DWS requirement is already evidenced by the accepted hosted core run. The hosted differential rerun is additional validation of the invention mechanism, not a prerequisite for meaningful DWS integration.
+Do not claim hosted Differential Reverification PASS unless a new hosted run actually succeeds.
 
-Do **not** claim hosted Differential Reverification PASS. The correct distinction is:
-- hosted core DWS: **PASS**;
-- deterministic Differential Reverification: **PASS**;
-- hosted differential proof: **NON-BLOCKING LIMITATION — QUOTA_402**.
+## Public judge URL
 
-Do not enable pay-as-you-go solely to remove this limitation. If Nutrient provides additional event credits, the existing workflow can rerun without code changes.
+`https://evidencebound-releaseproof-dws.vercel.app`
+
+The deployed service is intentionally an `EVIDENCE_SURFACE`. It exposes retained live receipts and controlled mechanism evidence without exposing Nutrient credentials or consuming provider quota from judge/browser traffic.
+
+Previously accepted production revision:
+`dpl_DgptupzTPrqx9HsySqWtwenmUNoA`
+
+Previously accepted endpoints:
+
+- `/`: **HTTP 200 PASS**;
+- `/health`: **HTTP 200 PASS**;
+- `/api/live-evidence`: **HTTP 200 PASS**;
+- `/api/evaluation`: **HTTP 200 PASS**;
+- `/api/demo`: **HTTP 200 PASS**.
+
+This production evidence is historical until the refactor is merged and a new production acceptance is recorded.
 
 ## Prize narrative
 
-**Progress:** public source, passing public CI, live DWS-backed document processing, real source-grounding receipts, release-manifest generation, deterministic review/reverification mechanism, and a live public evidence URL.
+**Progress:** public source, live DWS-backed historical processing evidence, source-grounded receipts, deterministic semantic review continuity, passing public CI, and a live evidence surface.
 
-**Concept:** stale approvals should not survive merely because a file/version identifier changed or remained familiar. ReleaseProof binds review to the exact source-grounded finding evidence and remints the decision state for the current packet.
+**Concept:** a human approval should neither survive blindly because a document is “the same file” nor be reset blindly because any byte changed. ReleaseProof separates integrity from semantic review identity and invalidates only authority whose grounded evidence no longer reproduces.
 
-**Feasibility:** the hosted Processor integration works end-to-end on three PDFs. The live disagreement case demonstrates why deterministic cross-document reconciliation plus explicit human review is operationally useful. The public judge URL exposes the proof without risking additional provider calls. Customer productivity remains a hypothesis, not a measured claim.
+**Feasibility:** the core hosted Processor integration already works end to end. The DWS-native v2 architecture removes duplicated platform work and keeps the ReleaseProof-owned layer focused on cross-document reconciliation, human authority, and differential invalidation.
 
-**Sponsor memory hook:** “After the packet changes, prove which human review is still grounded in the current document — and which one is not.”
+**Sponsor memory hook:** “After the packet changes, prove which human review is still grounded in current evidence, and which one is not.”
 
-## Prior-art boundary
+## Prior-art and IP boundary
 
-Version-aware approvals, provenance graphs and dependency invalidation already exist. ReleaseProof does not claim to invent them. The competition contribution is the concrete DWS-grounded, evidence-scoped Differential Reverification pipeline and release predicate. No patent novelty claim is made.
+Version-aware approvals, provenance graphs, dependency invalidation, ontologies and knowledge graphs already exist. ReleaseProof does not claim to invent them.
 
-## Non-blocking limitations / optional improvements
+The competition contribution is the concrete DWS-grounded Differential Reverification mechanism and approval lifecycle. The repository does not copy OntoGuard ontology schemas, proprietary algorithms, policy language or implementation details. EvidenceBound transfer candidates are independently defined typed evidence/authority primitives and deterministic dependency semantics only.
 
-### Hosted Differential Reverification rerun — NON-BLOCKING / QUOTA_402
-Only rerun if Nutrient supplies additional event credits or the evidence value clearly justifies it. Do not modify evidence-binding semantics to force a positive result; preserve provider-jitter negative results if observed.
+No patent novelty claim is made.
 
-### DWS Viewer — OPTIONAL / UNRUN
-Evaluate only if it materially strengthens the human review experience without displacing Processor as the core document operation.
+## Current limitations
 
-### Real user metrics — UNVERIFIED
-No claim of measured reviewer-time savings or customer adoption is made.
-
-None of the items above prevents the current project from being submitted and judged on its verified implementation.
+- hosted Differential Reverification rerun: **QUOTA_402**;
+- new v2 Data Extraction hosted acceptance: **UNRUN**;
+- Viewer hosted review integration: **UNRUN**;
+- `/sign` hosted acceptance: **UNRUN**;
+- real reviewer-time/customer metrics: **UNVERIFIED**.
 
 ## Capture targets
 
-- public judge hero at `https://evidencebound-releaseproof-dws.vercel.app`;
-- sanitized hosted DWS run/receipt evidence;
-- page/bbox/confidence grounding;
-- live mismatch -> `REVIEW_REQUIRED`;
-- scoped approval UI from the executable repository judge path;
-- controlled non-material revision preserving unchanged review into a **new** manifest;
-- material reviewed-slice revision invalidating the old review;
-- live manifest/audit hashes;
-- explicit quota-boundary disclosure for hosted Differential Reverification.
+- public judge hero;
+- retained hosted DWS run/receipt evidence;
+- real hosted mismatch -> `REVIEW_REQUIRED`;
+- semantic review key visualization: page + field path + normalized value + bbox tolerance;
+- non-material revision preserving review into a new manifest;
+- material evidence revision invalidating old authority;
+- page-local blast-radius case;
+- clear boundary between historical hosted PASS and new v2 UNRUN integrations.
 
-See `docs/live-dws-evidence.md`, `docs/vercel-production-evidence.md`, and `qa/QA_RECEIPT.json`.
+See `README.md`, `docs/live-dws-evidence.md`, `docs/vercel-production-evidence.md`, `docs/evidencebound-core-transfer.md`, and `qa/QA_RECEIPT.json`.
