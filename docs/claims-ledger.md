@@ -10,13 +10,14 @@
 | later runtime bbox defaults cannot reinterpret an existing policy-bound review | frozen-policy regression test | VERIFIED / public CI |
 | unsupported equivalence-policy versions fail closed to `REVIEW_REQUIRED` | frozen-policy regression test | VERIFIED / public CI |
 | changing the frozen equivalence policy changes `authority_binding` | authority-binding regression test | VERIFIED / public CI |
+| `authority_binding` is explicitly serialized into the release manifest | manifest serialization regression test | VERIFIED / public CI |
 | negative bbox tolerances are rejected | policy validation test | VERIFIED / public CI |
 | legacy reviews without frozen policy are not assigned inferred tolerance and remain exact-binding only | engine implementation + compatibility semantics | VERIFIED / public CI |
 | page-7 integrity change can leave page-2 review authority valid | page-level blast-radius regression test | VERIFIED / public CI |
 | stable logical finding ID is separate from changing semantic evidence binding | semantic reverification regression test | VERIFIED / public CI |
 | malformed/missing source grounding fails closed | normalizer tests | VERIFIED / public CI |
 | controlled fixtures are explicitly distinguishable from live DWS | provenance labels/UI/tests | VERIFIED / public CI |
-| retained `results/controlled-demo.json` and `results/evaluation.json` match current executable mechanism | retained-result parity tests | VERIFIED / public CI at run `32750626503`; final PR-head rerun required after later docs/UI changes |
+| retained `results/controlled-demo.json` and `results/evaluation.json` match current executable mechanism | retained-result parity tests | VERIFIED / public CI; merge gate requires GREEN current PR head |
 | hosted DWS request reached real Processor `/build` using repository secret | historical live GitHub Actions | VERIFIED |
 | hosted Processor returned parseable grounded key/value content with bbox and confidence | historical hosted Actions + retained artifact | VERIFIED |
 | live response may omit documented `pageIndex`; ordered-page-position compatibility is provenance-labelled and malformed present indices fail closed | live diagnostic + public CI | VERIFIED |
@@ -30,7 +31,7 @@
 | Viewer finding/review maps to annotation + reviewer-specific layer/comment + named approved layer | deterministic projection contract | VERIFIED / hosted Viewer UNRUN |
 | release artifact can be sealed through Processor `/sign` adapter | contract test | VERIFIED / hosted signing UNRUN |
 | hosted Differential Reverification preserves review after non-material revision | live differential acceptance | NON-BLOCKING LIMITATION - QUOTA_402 |
-| public repository and Python 3.11/3.12/3.13 GitHub Actions matrix | GitHub repository / Actions | 56/56 PASS per lane at run `32750626503`; final PR-head rerun required after later docs/UI changes |
+| public repository and Python 3.11/3.12/3.13 GitHub Actions matrix | GitHub repository / Actions | 56/56 PASS per lane at behavioral run `32751455299`; merge gate requires GREEN current PR head |
 | public Vercel evidence URL serves health/live-evidence/evaluation/demo paths | previous production acceptance | VERIFIED HISTORICALLY; refactor deployment requires new acceptance |
 | public Vercel service performs no runtime Nutrient calls | route surface + source + health contract | VERIFIED HISTORICALLY; recheck after deploy |
 | Differential Reverification addresses a real corrected/re-issued packet workflow | Nutrient Solutions Engineering field feedback from customer projects | EXTERNAL FIELD OBSERVATION, not a market-size or roadmap claim |
@@ -58,7 +59,7 @@ New semantic reviews store:
 - normalization version `nfkc-whitespace/1`;
 - bbox metric `axis-absolute/1`.
 
-`authority_binding` commits to the finding, exact finding binding, reviewer decision, reviewer identity, rationale, evidence identities, and frozen equivalence policy.
+`authority_binding` commits to the finding, exact finding binding, reviewer decision, reviewer identity, rationale, evidence identities, and frozen equivalence policy. The binding is explicitly included in the serialized review payload inside each current release manifest.
 
 A later runtime cannot change the meaning of an old review by changing its bbox default. Unsupported policy versions fail closed. Legacy reviews without policy remain exact-binding only; ReleaseProof does not infer a historical tolerance that was never recorded.
 
@@ -93,6 +94,10 @@ After this refactor merges, production acceptance must be rerun before the refac
 ## Compliance claim boundary
 
 Frozen policy, deterministic replay and tamper-evident hashes are useful controls for auditability. They do not by themselves establish legal non-repudiation or compliance/certification under SOC 2, FDA 21 CFR Part 11, ISO or another regulatory framework. Identity assurance, qualified signatures where required, access controls, retention, validation, operational controls and independent audits remain outside this mechanism.
+
+## Merge gate
+
+Do not merge on the basis of an older green run alone. The current PR head must have a fully green GitHub Actions matrix before merge.
 
 ## IP / prior-art boundary
 
