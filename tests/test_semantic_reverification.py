@@ -114,6 +114,7 @@ def test_review_freezes_equivalence_policy_and_authority_binding():
     review = approved.reviews[0]
     assert review.equivalence_policy == policy
     assert review.authority_binding
+    assert approved.unsigned_payload()["reviews"][0]["authority_binding"] == review.authority_binding
 
     wider = replace(review, equivalence_policy=EvidenceEquivalencePolicy(bbox_tolerance=5.0))
     assert wider.authority_binding != review.authority_binding
