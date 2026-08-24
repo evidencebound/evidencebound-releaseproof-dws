@@ -47,6 +47,16 @@ def test_public_surface_describes_semantic_identity_not_confidence_binding():
     assert 'Python 3.11-3.13' in html
 
 
+def test_public_surface_explains_frozen_authority_policy_without_compliance_overclaim():
+    client = TestClient(app)
+    html = client.get('/').text
+    assert 'Frozen Authority Policy' in html
+    assert 'evidence-equivalence/1' in html
+    assert 'runtime defaults cannot silently reinterpret it' in html
+    assert 'SOC 2 compliant' not in html
+    assert 'FDA 21 CFR Part 11 compliant' not in html
+
+
 def test_public_controlled_endpoints_remain_functional():
     client = TestClient(app)
     demo = client.get('/api/demo')
