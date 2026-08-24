@@ -1,16 +1,21 @@
 {
   "snapshot_date": "2026-08-24",
   "submission_readiness": "READY_WITH_HOSTED_V2_UNRUN",
-  "evidence_class": "controlled semantic mechanism + public GitHub CI + historical hosted Nutrient Processor acceptance + historical Vercel production acceptance",
+  "evidence_class": "controlled semantic authority mechanism + public GitHub CI + historical hosted Nutrient Processor acceptance + historical Vercel production acceptance",
   "checks": {
     "semantic_evidence_identity": "PASS",
     "stable_logical_finding_identity": "PASS",
+    "frozen_equivalence_policy": "PASS",
+    "authority_binding": "PASS",
+    "runtime_policy_drift_blocked": "PASS",
+    "unknown_policy_version_fail_closed": "PASS",
+    "legacy_review_exact_binding_only": "PASS",
     "bbox_tolerance_reverification": "PASS",
     "confidence_only_drift_not_semantic_identity": "PASS",
     "material_value_change_invalidates_review": "PASS",
     "page_level_blast_radius": "PASS",
-    "retained_controlled_result_parity": "PASS_AT_CURRENT_MECHANISM_CONTENT_PENDING_FINAL_CI",
-    "retained_evaluation_result_parity": "PASS_AT_CURRENT_MECHANISM_CONTENT_PENDING_FINAL_CI",
+    "retained_controlled_result_parity": "PASS",
+    "retained_evaluation_result_parity": "PASS",
     "processor_canonicalize_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
     "processor_page_isolation_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
     "data_extraction_request_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
@@ -18,10 +23,10 @@
     "nutrient_studio_schema_generation": "UNRUN_EXTERNAL_PRODUCT_STEP",
     "viewer_review_projection": "PASS_PROJECTION_TEST_HOSTED_UNRUN",
     "processor_sign_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
-    "compileall": "PASS_AT_REFRACTOR_CODE_HEAD_FINAL_HEAD_PENDING",
-    "controlled_demo": "PASS_AT_REFRACTOR_CODE_HEAD_FINAL_HEAD_PENDING",
-    "controlled_evaluation": "PASS_AT_REFRACTOR_CODE_HEAD_FINAL_HEAD_PENDING",
-    "local_http_judge_path": "PASS_AT_REFRACTOR_CODE_HEAD_FINAL_HEAD_PENDING",
+    "compileall": "PASS_AT_FROZEN_POLICY_CODE_HEAD",
+    "controlled_demo": "PASS_AT_FROZEN_POLICY_CODE_HEAD",
+    "controlled_evaluation": "PASS_AT_FROZEN_POLICY_CODE_HEAD",
+    "local_http_judge_path": "PASS_AT_FROZEN_POLICY_CODE_HEAD",
     "missing_nutrient_key_fail_closed": "PASS",
     "cross_document_review_replay_blocked": "PASS",
     "nutrient_repository_secret_gate": "PASS_HISTORICAL",
@@ -31,7 +36,8 @@
     "live_nutrient_dws_core": "PASS_HISTORICAL",
     "live_differential_reverification": "NON_BLOCKING_LIMITATION_QUOTA_402",
     "public_github_repo": "PASS",
-    "public_github_ci_final_head": "PENDING_FINAL_RUN",
+    "public_github_ci_frozen_policy_code_head": "PASS",
+    "public_github_ci_final_pr_head": "PENDING_FINAL_RUN_AFTER_DOCS_UI",
     "public_vercel_project": "PASS_HISTORICAL",
     "public_vercel_build": "PASS_HISTORICAL",
     "public_vercel_root": "PASS_HISTORICAL",
@@ -40,6 +46,8 @@
     "public_vercel_evaluation": "PASS_HISTORICAL",
     "public_vercel_demo": "PASS_HISTORICAL",
     "refactor_production_acceptance": "UNRUN",
+    "regulatory_compliance_or_certification": "NOT_CLAIMED",
+    "legal_non_repudiation": "NOT_CLAIMED",
     "paid_nutrient_plan_required_for_existing_submission_path": "NO",
     "ruff": "UNRUN",
     "mypy": "UNRUN",
@@ -49,12 +57,28 @@
   "refactor_evidence": {
     "design_spec": "docs/superpowers/specs/2026-08-24-dws-native-semantic-reverification-design.md",
     "implementation_plan": "docs/superpowers/plans/2026-08-24-dws-native-semantic-reverification.md",
+    "frozen_authority_design": "docs/frozen-authority-policy.md",
     "semantic_key": [
       "document_id",
       "page",
       "field_path",
       "normalized_value",
-      "bounds_within_tolerance"
+      "bounds_within_frozen_tolerance"
+    ],
+    "equivalence_policy": {
+      "version": "evidence-equivalence/1",
+      "default_bbox_tolerance": 2.0,
+      "value_normalization": "nfkc-whitespace/1",
+      "bbox_metric": "axis-absolute/1"
+    },
+    "authority_binding_commits_to": [
+      "finding_id",
+      "finding_binding",
+      "decision",
+      "reviewer",
+      "rationale",
+      "evidence_identities",
+      "frozen_equivalence_policy"
     ],
     "confidence_role": "ADMISSIBILITY_AND_REVIEW_ROUTING_NOT_SEMANTIC_IDENTITY",
     "integrity_role": "DOCUMENT_AND_PAGE_DIGESTS_PLUS_PROVIDER_RECEIPTS",
@@ -62,6 +86,7 @@
       "cross_document_reconciliation",
       "stable_logical_findings",
       "human_authority_binding",
+      "frozen_authority_policy",
       "differential_reverification",
       "selective_invalidation",
       "approval_lifecycle"
@@ -73,14 +98,14 @@
       "viewer_annotations_comments_layers",
       "processor_digital_signature"
     ],
-    "last_green_code_head_before_truth_artifact_updates": "ee65046c1329c95b9c5a4fb5d35a55e8799deea0",
-    "last_green_code_head_tests_per_python_lane": 49,
-    "last_green_code_head_python_lanes": [
+    "frozen_policy_code_head": "0ce305cdc08be6d1549a25f6812a5d27fbf7b2d9",
+    "frozen_policy_tests_per_python_lane": 56,
+    "frozen_policy_python_lanes": [
       "3.11",
       "3.12",
       "3.13"
     ],
-    "last_green_code_head_ci_run_id": 32745303295
+    "frozen_policy_ci_run_id": 32750626503
   },
   "live_dws_evidence": {
     "canonical_core_run_id": 32215337912,
@@ -122,7 +147,7 @@
     "nutrient_secret_in_vercel": "NOT_REQUIRED"
   },
   "retained_result_sha256": {
-    "controlled_demo": "adc6bc1b52c002d8c406bfc42cec7029bd12cc7261482cae027b880f0f1de7c6",
+    "controlled_demo": "62f7d391dac43a195d87c8e6a43929f2c41ad90b3b45e4c1f2772d7091ec05d0",
     "evaluation": "683ca81f3146c9b30abff585f7f0eec409201fb98bb70a82ea29932bba15188f"
   },
   "ip_boundary": {
@@ -130,12 +155,13 @@
     "ontoguard_proprietary_algorithm_claimed": "NO",
     "rdf_owl_sparql_graph_database_added": "NO",
     "llm_or_embedding_matcher_added": "NO",
-    "evidencebound_transfer": "INDEPENDENT_TYPED_EVIDENCE_AUTHORITY_DEPENDENCY_PRIMITIVES_ONLY"
+    "evidencebound_transfer": "INDEPENDENT_TYPED_EVIDENCE_FROZEN_AUTHORITY_DEPENDENCY_PRIMITIVES_ONLY"
   },
   "limits": [
     "Controlled fixtures are not live DWS output.",
-    "Historical hosted core DWS integration passed; new DWS-native v2 paths remain UNRUN until separately accepted with provider credentials.",
-    "The old manifest never becomes current after a source revision; a new manifest is minted with only still-grounded authority carried forward.",
+    "Historical hosted core DWS integration passed; new DWS-native paths remain UNRUN until separately accepted with provider credentials.",
+    "The old manifest never becomes current after a source revision; a new manifest is minted with only still-grounded authority carried forward under each review's frozen policy.",
+    "Frozen equivalence policy supports deterministic replay but is not by itself regulatory compliance, certification, or legal non-repudiation.",
     "The synthetic acceptance-harness review is not a real human-review metric.",
     "The Vercel acceptance recorded here predates the refactor and must be rerun after merge.",
     "No real reviewer-time savings or market-size claim is made."
