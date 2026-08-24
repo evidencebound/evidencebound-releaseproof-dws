@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from .model import (
+    EvidenceEquivalencePolicy,
     ExtractedDocument,
     Finding,
     HumanReview,
@@ -17,6 +18,7 @@ from .model import (
 REQUIRED = ("shipment_id", "quantity", "currency", "declared_value")
 CONFIDENCE_THRESHOLD = 0.92
 DEFAULT_BBOX_TOLERANCE = 2.0
+DEFAULT_EQUIVALENCE_POLICY = EvidenceEquivalencePolicy(bbox_tolerance=DEFAULT_BBOX_TOLERANCE)
 
 
 def _finding(
@@ -96,36 +98,41 @@ def reconcile(documents: tuple[ExtractedDocument, ...]) -> tuple[Finding, ...]:
     return tuple(findings)
 
 
-def _review_matches_finding(
-    review: HumanReview,
-    finding: Finding,
-    *,
-    bbox_tolerance: float = DEFAULT_BBOX_TOLERANCE,
-) -> bool:
+def _review_matches_finding(review: HumanReview, finding: Finding) -> bool:
     if review.finding_id != finding.finding_id:
         return False
-    if review.evidence_identities:
-        return evidence_sets_equivalent(
-            review.evidence_identities,
-            finding.evidence_identities,
-            bbox_tolerance=bbox_tolerance,
-        )
-    # Historical manifests created before semantic identity support remain fail-closed
-    # to their exact binding. No semantic continuity is inferred retroactively.
-    return review.finding_binding == finding.binding
+
+    # Historical manifests created before frozen equivalence-policy support remain
+    # fail-closed to their exact binding. We never infer a tolerance retroactively.
+    if not review.evidence_identities or review.equivalence_policy is None:
+        return review.finding_binding == finding.binding
+
+    policy = review.equivalence_policy
+    if not policy.supported:
+        return False
+
+    current_identities = finding.evidence_identities
+    if any(item.value_normalization != policy.value_normalization for item in review.evidence_identities):
+        return False
+    if any(item.value_normalization != policy.value_normalization for item in current_identities):
+        return False
+
+    return evidence_sets_equivalent(
+        review.evidence_identities,
+        current_identities,
+        bbox_tolerance=policy.bbox_tolerance,
+    )
 
 
 def _valid_reviews(
     findings: tuple[Finding, ...],
     reviews: tuple[HumanReview, ...],
-    *,
-    bbox_tolerance: float = DEFAULT_BBOX_TOLERANCE,
 ) -> dict[str, HumanReview]:
     by_id = {review.finding_id: review for review in reviews}
     valid: dict[str, HumanReview] = {}
     for finding in findings:
         review = by_id.get(finding.finding_id)
-        if review and _review_matches_finding(review, finding, bbox_tolerance=bbox_tolerance):
+        if review and _review_matches_finding(review, finding):
             valid[finding.finding_id] = review
     return valid
 
@@ -136,7 +143,10 @@ def decide(
     *,
     bbox_tolerance: float = DEFAULT_BBOX_TOLERANCE,
 ) -> ReleaseState:
-    valid = _valid_reviews(findings, reviews, bbox_tolerance=bbox_tolerance)
+    # bbox_tolerance is retained only for source compatibility with the v2 API.
+    # Policy-bound reviews are never reinterpreted through this runtime value.
+    _ = bbox_tolerance
+    valid = _valid_reviews(findings, reviews)
     if any(f.state == ReleaseState.BLOCKED for f in findings):
         return ReleaseState.BLOCKED
     for finding in findings:
@@ -158,7 +168,7 @@ def build_manifest(
 ) -> ReleaseManifest:
     findings = reconcile(documents)
     state = decide(findings, reviews, bbox_tolerance=bbox_tolerance)
-    manifest = ReleaseManifest("releaseproof/2", policy_version, documents, findings, reviews, state)
+    manifest = ReleaseManifest("releaseproof/3", policy_version, documents, findings, reviews, state)
     return replace(manifest, manifest_sha256=digest(manifest.unsigned_payload()))
 
 
@@ -168,10 +178,15 @@ def review_finding(
     reviewer: str,
     decision: str,
     rationale: str,
+    *,
+    equivalence_policy: EvidenceEquivalencePolicy | None = None,
 ) -> ReleaseManifest:
     finding = next((item for item in manifest.findings if item.finding_id == finding_id), None)
     if finding is None:
         raise KeyError(finding_id)
+    policy = equivalence_policy or DEFAULT_EQUIVALENCE_POLICY
+    if not policy.supported:
+        raise ValueError("cannot create review with unsupported equivalence policy")
     review = HumanReview(
         finding_id=finding.finding_id,
         finding_binding=finding.binding,
@@ -179,6 +194,7 @@ def review_finding(
         reviewer=reviewer,
         rationale=rationale,
         evidence_identities=finding.evidence_identities,
+        equivalence_policy=policy,
     )
     kept = tuple(item for item in manifest.reviews if item.finding_id != finding_id)
     return build_manifest(manifest.documents, kept + (review,), manifest.policy_version)
@@ -223,9 +239,9 @@ def differential_reverify(
 ) -> ReverificationResult:
     """Mint a current manifest while reusing only still-valid semantic review authority.
 
-    Whole-document changes never make the old manifest current. A fresh manifest is
-    always minted. Reviews are carried forward only when the same logical finding is
-    reproduced from an equivalent normalized evidence set.
+    Each semantic HumanReview carries the equivalence policy frozen when authority
+    was granted. ``bbox_tolerance`` remains as a v2 compatibility argument but cannot
+    loosen or tighten an existing policy-bound review.
     """
     if digest(prior.unsigned_payload()) != prior.manifest_sha256:
         raise ValueError("prior manifest integrity failure")
@@ -242,11 +258,7 @@ def differential_reverify(
     invalidated: list[HumanReview] = []
     for review in prior.reviews:
         finding = current_by_id.get(review.finding_id)
-        if finding is not None and _review_matches_finding(
-            review,
-            finding,
-            bbox_tolerance=bbox_tolerance,
-        ):
+        if finding is not None and _review_matches_finding(review, finding):
             preserved.append(review)
         else:
             invalidated.append(review)
