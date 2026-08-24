@@ -13,9 +13,13 @@ def _read_json(path: str):
     return json.loads((ROOT / path).read_text())
 
 
+def _json_value(value):
+    return json.loads(json.dumps(value, sort_keys=True))
+
+
 def test_retained_controlled_demo_matches_current_mechanism():
-    assert _read_json("results/controlled-demo.json") == run_demo()
+    assert _read_json("results/controlled-demo.json") == _json_value(run_demo())
 
 
 def test_retained_evaluation_matches_current_mechanism():
-    assert _read_json("results/evaluation.json") == asdict(run_evaluation())
+    assert _read_json("results/evaluation.json") == _json_value(asdict(run_evaluation()))
