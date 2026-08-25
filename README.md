@@ -94,6 +94,10 @@ Public evidence URL:
 
 `https://evidencebound-releaseproof-dws.vercel.app`
 
+Public repository:
+
+`https://github.com/evidencebound/evidencebound-releaseproof-dws`
+
 Local executable mechanism:
 
 ```bash
