@@ -1,8 +1,8 @@
 """Run one quota-bounded hosted acceptance of the DWS-native ReleaseProof v2 path.
 
-Only synthetic documents are sent to Nutrient. The receipt intentionally excludes API
-keys and raw provider payloads. On provider-contract failure it retains a structural
-shape diagnostic so a failed paid call still produces useful evidence.
+Only synthetic documents are sent to Nutrient. Processor and Data Extraction use
+separate product credentials. The receipt excludes API keys and raw provider payloads.
+On provider-contract failure it retains only a structural shape diagnostic.
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ TARGET_RULE = "CROSS_DOCUMENT_MISMATCH"
 
 
 def _shape(value: Any, *, depth: int = 0) -> Any:
-    """Return only provider response structure, never extracted scalar values."""
+    """Return provider response structure only, never extracted scalar values."""
     if depth >= 5:
         return type(value).__name__
     if isinstance(value, dict):
@@ -59,6 +59,19 @@ def _shape(value: Any, *, depth: int = 0) -> Any:
 
 def _sha(data: bytes) -> str:
     return sha256(data).hexdigest()
+
+
+def _live_product_keys() -> tuple[str, str]:
+    """Fail closed before network calls unless both Nutrient product keys exist."""
+    processor_key = os.environ.get("NUTRIENT_API_KEY")
+    if not processor_key:
+        raise RuntimeError("NUTRIENT_API_KEY is required for Processor")
+    extraction_key = os.environ.get("NUTRIENT_DATA_EXTRACTION_API_KEY")
+    if not extraction_key:
+        raise RuntimeError(
+            "NUTRIENT_DATA_EXTRACTION_API_KEY is required for Data Extraction"
+        )
+    return processor_key, extraction_key
 
 
 def _with_shipment(lines: list[str], shipment_id: str) -> list[str]:
@@ -202,18 +215,19 @@ def _review_all_review_required(manifest):
 
 
 def run(workdir: Path, signed_output: Path) -> dict[str, Any]:
-    api_key = os.environ.get("NUTRIENT_API_KEY")
-    if not api_key:
-        raise RuntimeError("NUTRIENT_API_KEY is required")
-
-    processor = CountingProcessor(api_key)
-    extraction = RecordingExtraction(api_key)
+    processor_key, extraction_key = _live_product_keys()
+    processor = CountingProcessor(processor_key)
+    extraction = RecordingExtraction(extraction_key)
     receipt: dict[str, Any] = {
         "execution": "LIVE_NUTRIENT_DWS_V2",
         "status": "FAIL",
         "schema_source": SCHEMA_SOURCE,
         "mode": "structure",
         "synthetic_documents_only": True,
+        "credential_classes": {
+            "processor": "NUTRIENT_API_KEY",
+            "data_extraction": "NUTRIENT_DATA_EXTRACTION_API_KEY",
+        },
     }
 
     try:
@@ -249,7 +263,9 @@ def run(workdir: Path, signed_output: Path) -> dict[str, Any]:
             raise RuntimeError(
                 f"synthetic reviewed baseline did not reach VERIFIED: {reviewed.release_state.value}"
             )
-        target_review = next(review for review in reviewed.reviews if review.finding_id == target.finding_id)
+        target_review = next(
+            review for review in reviewed.reviews if review.finding_id == target.finding_id
+        )
 
         nonmaterial_path = workdir / "revisions" / "invoice-nonmaterial.pdf"
         _write_nonmaterial_revision(base / "invoice.pdf", nonmaterial_path)
@@ -280,9 +296,7 @@ def run(workdir: Path, signed_output: Path) -> dict[str, Any]:
         if target.finding_id not in material.invalidated_review_ids:
             raise RuntimeError("target review was not invalidated after material evidence change")
         if material.current_manifest.release_state != ReleaseState.REVIEW_REQUIRED:
-            raise RuntimeError(
-                "material evidence change did not return packet to REVIEW_REQUIRED"
-            )
+            raise RuntimeError("material evidence change did not return packet to REVIEW_REQUIRED")
 
         release_pdf = _pdf_bytes(
             [
@@ -370,11 +384,17 @@ def main() -> int:
         receipt = run.last_receipt or {
             "execution": "LIVE_NUTRIENT_DWS_V2",
             "status": "FAIL",
-            "error": {"type": "UNKNOWN", "message": "acceptance failed before receipt initialization"},
+            "error": {
+                "type": "UNKNOWN",
+                "message": "acceptance failed before receipt initialization",
+            },
         }
         exit_code = 1
 
-    args.output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.output.write_text(
+        json.dumps(receipt, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     print(json.dumps(receipt, indent=2, sort_keys=True))
     return exit_code
 
