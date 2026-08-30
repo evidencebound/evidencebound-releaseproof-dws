@@ -1,12 +1,23 @@
-# ReleaseProof — Differential Reverification with Nutrient DWS
+# ReleaseProof - Differential Reverification with Nutrient DWS
 
-**One-line pitch:** After a document packet changes, ReleaseProof reprocesses current source-grounded evidence and preserves prior human authority only when the same logical finding is reproduced from semantically equivalent evidence under the exact equivalence policy frozen when that authority was granted; otherwise the old review cannot release the new packet.
+**One-line pitch:** After a document packet changes, ReleaseProof reprocesses current source-grounded evidence and preserves prior human authority only when the same logical finding is reproduced from semantically equivalent evidence under the exact equivalence policy frozen when that authority was granted. Otherwise the old review cannot release the new packet.
 
-## Submission readiness — READY
+## Submission readiness - READY
 
-ReleaseProof is submission-ready for the Nutrient DWS Challenge except for final media/form work. The competition-critical hosted DWS core operation has already executed successfully against the real Nutrient Processor API and is retained as immutable evidence.
+ReleaseProof is submission-ready for the Nutrient DWS Challenge except for final media/form work.
 
-The 2026-08-24 architecture refactor makes future executions more DWS-native without rewriting historical evidence. The accepted hosted Processor run remains the live proof. The DWS-native v2 path is now **partially hosted-tested**: run `33295050008` successfully completed Processor OCR + flatten canonicalization, then Data Extraction returned HTTP 403 because the harness supplied the historical Processor product key to a service that requires a separate Data Extraction product key. Canonical page isolation, hosted Differential Reverification and signing were not reached after that fail-closed stop. See `docs/hosted-v2-acceptance-2026-08-30.md`.
+Current evidence state:
+
+- historical hosted Nutrient Processor core: **PASS** - run `32215337912`;
+- DWS-native v2 core: **PASS_HOSTED** - run `33296171708`;
+- hosted Differential Reverification: **PASS_HOSTED** - run `33296171708`;
+- optional Processor `/sign`: **FAIL_HTTP_400** - reproduced independently in run `33296422243` after Processor normalization;
+- hosted Viewer review execution: **UNRUN**;
+- real reviewer-time/customer metrics: **UNVERIFIED**.
+
+The v2 core PASS is intentionally narrower than an end-to-end signing claim. In run `33296171708`, the harness reached the signing call only after every required canonicalization, Data Extraction, page-grounding and Differential Reverification assertion had passed. Signing then returned HTTP 400 and remains a separately documented limitation.
+
+See `docs/hosted-v2-core-acceptance-2026-08-30.md`.
 
 ## Product boundary
 
@@ -16,83 +27,140 @@ ReleaseProof owns the layer Nutrient does not provide:
 
 - cross-document reconciliation;
 - stable logical finding identity;
-- human authority bound to the exact reviewed evidence;
+- human authority bound to reviewed evidence;
 - frozen rules for continued validity of that authority;
 - Differential Reverification after source change;
 - selective approval invalidation and carry-forward;
 - current release lifecycle.
 
-The mechanism does not treat a whole-document hash as semantic identity. Cryptographic digests remain integrity/provenance evidence while review continuity is evaluated against a compact normalized key:
+The semantic evidence key is:
 
 `document + page + field path + normalized value + bounding box within tolerance + coordinate space`
 
-Confidence remains an admissibility/review-routing signal. It is deliberately not part of semantic evidence identity.
+Cryptographic digests remain integrity/provenance evidence. Confidence remains an admissibility and review-routing signal and is deliberately not part of semantic identity.
 
 ## Frozen human authority policy
 
-A human review must not be reinterpreted later under whatever comparison defaults happen to exist in a newer runtime.
-
-Every new semantic `HumanReview` therefore stores a frozen `EvidenceEquivalencePolicy` containing:
+Every new semantic `HumanReview` stores a frozen `EvidenceEquivalencePolicy` containing:
 
 - policy version;
 - bbox tolerance;
 - value-normalization version;
 - bbox metric version.
 
-The review exposes an `authority_binding` digest over the finding, decision, reviewer, rationale, reviewed evidence identities and the frozen policy. Changing any of these inputs changes the authority binding.
+The review exposes an `authority_binding` digest over the finding, decision, reviewer, rationale, reviewed evidence identities and frozen policy.
 
-Differential Reverification evaluates historical authority under the review's stored policy, not the runtime's current default. A review created at bbox tolerance `2.0` cannot later be made valid by changing the runtime tolerance to `10.0`.
+Differential Reverification evaluates historical authority under the policy stored with that review, not under a future runtime default. For example, a review granted at bbox tolerance `2.0` cannot later be made valid by changing the runtime default to `10.0`.
 
-Unsupported policy versions fail closed to `REVIEW_REQUIRED`. Legacy reviews without a frozen policy are not assigned a guessed tolerance and remain exact-binding only.
+Unsupported historical policy versions fail closed to `REVIEW_REQUIRED`. Legacy reviews without a frozen policy are not assigned a guessed tolerance and remain exact-binding only.
 
-This supports deterministic historical replay and explicit policy provenance. It does **not**, by itself, claim legal non-repudiation or compliance/certification with SOC 2, FDA 21 CFR Part 11, ISO or other regulatory frameworks.
-
-See `docs/frozen-authority-policy.md`.
+This supports deterministic historical replay and explicit policy provenance. It does **not** by itself establish legal non-repudiation, SOC 2 compliance, FDA 21 CFR Part 11 compliance, ISO certification, or other regulatory certification.
 
 ## DWS-native v2 architecture
 
-### 1. Canonicalize before extraction
+### 1. Processor canonicalization
 
-`NutrientDwsTransport.canonicalize_pdf()` delegates OCR and flattening to Processor `/build`. `isolate_page()` delegates page selection to native Processor `parts[].pages`; ReleaseProof does not add a local OCR or PDF splitter.
+`NutrientDwsTransport.canonicalize_pdf()` delegates OCR and flattening to Processor `/build`. `isolate_page()` delegates page selection to Processor rather than using a local PDF splitter.
 
-### 2. Native Data Extraction grounding
+### 2. Data Extraction grounding
 
-`NutrientDataExtractionTransport` implements the live-proven Nutrient `/extraction/extract` contract with:
+`NutrientDataExtractionTransport` uses `/extraction/extract` with:
 
 - externally supplied JSON Schema;
 - `citationsEnabled: true`;
 - schema-shaped `output.data`;
-- provider `output.metadata` page reference, bbox and confidence;
-- provider `source_bboxes` block IDs when present;
-- reading order only when provided by Nutrient;
+- provider metadata for page, bbox and confidence;
+- provider source bbox IDs when present;
 - fail-closed normalization when required grounding is absent.
 
-Production schema input is expected from an external/Studio-authored contract through `NUTRIENT_EXTRACTION_SCHEMA_JSON`. ReleaseProof does not claim that a hand-written repository schema was generated by Nutrient Studio.
+Processor and Data Extraction use separate product credentials:
 
-Processor and Data Extraction use separate product credentials in the hosted acceptance path: `NUTRIENT_API_KEY` for Processor and `NUTRIENT_DATA_EXTRACTION_API_KEY` for Data Extraction. Both are required before a live acceptance run begins.
+- `NUTRIENT_API_KEY` - Processor;
+- `NUTRIENT_DATA_EXTRACTION_API_KEY` - Data Extraction.
 
-### 3. Page-level integrity and blast radius
+The acceptance schema uses only the supported schema-guided extraction subset. The repository does not claim its acceptance schema was generated by Nutrient Studio.
 
-Each canonical page can carry its own SHA-256 digest. Differential Reverification reports changed pages separately from changed documents, so an unrelated change on page 7 does not automatically invalidate authority grounded on unchanged page 2.
+### 3. Canonical coordinate space and page-level integrity
 
-### 4. DWS Viewer-native review projection
+Review bbox identity is explicitly marked as `nutrient-processor-canonical-rendition/1`. Evidence from an original/legacy coordinate space cannot be silently compared with evidence from the Processor-canonical rendition.
 
-`releaseproof.viewer` maps a grounded finding to the native review concepts recommended by Nutrient:
+Each grounded canonical page carries its own SHA-256 digest. Differential Reverification can therefore localize blast radius to changed pages instead of resetting an entire document packet.
 
-- annotation at the finding bounding box;
-- reviewer-specific layer;
-- review comment metadata;
-- named approved-state layer.
+### 4. Viewer review projection
 
-This is a deterministic projection contract, not a competing review database and not a claim of hosted Viewer execution.
+`releaseproof.viewer` maps findings to annotation, reviewer-layer, comment and approved-layer concepts. This is a deterministic projection contract, not a second review database. Hosted Viewer execution remains **UNRUN**.
 
-### 5. Standard signed release artifact path
+### 5. Optional signed artifact path
 
-`NutrientDwsTransport.sign_pdf()` implements the Processor `/sign` transport for a signed PDF release artifact. ReleaseProof still hashes its JSON manifest for internal integrity, but does not call a plain JSON hash a digital signature.
+`NutrientDwsTransport.sign_pdf()` implements the documented Processor `/sign` multipart transport. Current hosted calls return HTTP 400 even when the input is first normalized by Processor. This is documented as an optional provider/account limitation and is not represented as PASS.
+
+## Hosted DWS-native v2 acceptance - CORE PASS
+
+GitHub Actions run `33296171708`:
+
+- trigger commit: `0a0e3d1d9a38f2ebfe5a50712222741d4930f018`;
+- hosted job: `99216095769`;
+- artifact: `9727472871`;
+- artifact ZIP SHA-256: `fc7b7b9cfc2cee71912e59580f53ada8f03098b8532266f0cbf6507021f3bab2`.
+
+Observed provider calls before the optional sign failure:
+
+```json
+{
+  "processor": {
+    "canonicalize": 5,
+    "isolate_page": 5,
+    "sign": 1
+  },
+  "data_extraction": 5
+}
+```
+
+Required hosted assertions reached before signing:
+
+- Processor OCR/flatten canonicalization: **PASS**;
+- Data Extraction: **PASS**;
+- grounded field metadata: **PASS**;
+- canonical page isolation: **PASS**;
+- page SHA-256 binding: **PASS**;
+- canonical coordinate-space provenance: **PASS**;
+- intentional cross-document mismatch reproduced: **PASS**;
+- synthetic acceptance-harness review reached `VERIFIED`: **PASS**;
+- byte-different non-material revision preserved targeted authority and remained `VERIFIED`: **PASS**;
+- material Shipment ID revision invalidated targeted authority and returned to `REVIEW_REQUIRED`: **PASS**;
+- optional Processor `/sign`: **FAIL_HTTP_400**.
+
+The synthetic acceptance-harness review is not a real customer approval and is not used as a reviewer-time metric.
+
+## Isolated signing diagnostic
+
+To avoid repeating Data Extraction calls, signing was tested independently in run `33296422243`:
+
+- Processor normalization: **PASS**;
+- `/sign`: **FAIL_HTTP_400**;
+- calls: `canonicalize=1`, `sign=1`;
+- artifact: `9727544255`;
+- artifact ZIP SHA-256: `9e6f0d73e0707d826e300dadbc2b02fbf7527c7a229b73998143493ac7e17058`.
+
+This rules out the narrow hypothesis that `/sign` rejected only the locally generated pre-normalized PDF. No further signing calls are planned without a specific provider correction or entitlement explanation.
+
+## Historical hosted evidence
+
+The earlier accepted Processor-only path remains immutable historical evidence:
+
+- run `32215337912`;
+- commit `d885ed31ebb8cc9449c450b0334c630c3b11f656`;
+- artifact `9352133498`;
+- artifact digest `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`;
+- manifest `a5716cc3f5580a6dde1e21d4199675bb65f2b46e92b7b65a334f05a1d57663cc`.
+
+That historical output omitted documented `pageIndex`; ReleaseProof uses ordered page position only when `pageIndex` is absent and fails closed when a present index is malformed. Nutrient Solutions Engineering confirmed the observed omission was a real documentation/provider discrepancy and escalated it.
+
+Earlier HTTP 402 and initial v2 credential/schema failures are retained as chronology in the evidence documents; they are not the current acceptance state.
 
 ## Judge path
 
-Public evidence URL:
+Public evidence surface:
 
 `https://evidencebound-releaseproof-dws.vercel.app`
 
@@ -100,118 +168,44 @@ Public repository:
 
 `https://github.com/evidencebound/evidencebound-releaseproof-dws`
 
-Local executable mechanism:
+Endpoints after the current surface is deployed:
 
-```bash
-python -m pip install -e '.[dev]' --no-build-isolation
-PYTHONPATH=src pytest
-PYTHONPATH=src uvicorn releaseproof.public_app:app --host 127.0.0.1 --port 8080
-```
+- `/` - judge summary;
+- `/health` - machine-readable current states;
+- `/api/live-evidence` - backward-compatible historical Processor receipt;
+- `/api/v2-evidence` - current DWS-native v2 hosted evidence;
+- `/api/demo` - controlled mechanism;
+- `/api/evaluation` - controlled evaluation.
 
-The public judge surface exposes:
+The public surface performs no live Nutrient calls. Provider acceptance calls are isolated in explicitly triggered GitHub workflows.
 
-- `/` — truthful judge surface separating hosted and controlled evidence;
-- `/health` — machine-readable PASS/BLOCKED states;
-- `/api/live-evidence` — sanitized immutable receipt for the accepted hosted DWS run;
-- `/api/demo` — controlled mechanism summary;
-- `/api/evaluation` — controlled Differential Reverification metrics.
+## Verification
 
-The Vercel service is deliberately labelled `EVIDENCE_SURFACE`. It does **not** call Nutrient from the browser, page load or any public endpoint. Executable Differential Reverification and DWS integrations remain in this repository.
+Current public CI exercises Python 3.11, 3.12 and 3.13 plus compile, synthetic PDF and non-material revision gates.
 
-The deterministic mechanism demonstrates:
+Core mechanism coverage includes:
 
-- initial reconciliation -> `REVIEW_REQUIRED`;
-- scoped human review -> `VERIFIED`;
-- non-material file revision -> a new manifest while semantically equivalent evidence preserves the review;
-- confidence-only drift within the same review-required class -> semantic identity remains unchanged;
-- material normalized-value or bbox change -> old review invalidated;
-- unrelated page change -> page-local blast radius rather than blanket document invalidation;
-- historical review policy cannot be silently loosened or tightened by a later runtime default.
+- semantic evidence identity;
+- stable logical finding identity;
+- frozen equivalence policy;
+- explicit authority binding;
+- runtime policy drift protection;
+- unknown-policy fail closed;
+- legacy exact-binding compatibility;
+- bbox tolerance behavior;
+- confidence-only drift behavior;
+- material-value invalidation;
+- page-level blast radius;
+- canonical coordinate-space isolation;
+- Data Extraction page discovery from authoritative grounded field metadata;
+- separate Processor/Data Extraction credential preflight.
 
-Controlled fixtures are explicitly labelled `controlled-fixture:nutrient-shaped` and are never presented as live DWS execution.
+See also:
 
-## Nutrient DWS core operation — LIVE PASS
-
-The historical accepted `NutrientDwsTransport` path uses hosted Processor `/build` with multipart PDF input and `json-content` / `keyValuePairs: true`. Hosted acceptance on 2026-08-19 processed a three-document synthetic trade packet through the real Nutrient endpoint with no fixture fallback.
-
-Canonical evidence run: GitHub Actions `32215337912` at commit `d885ed31ebb8cc9449c450b0334c630c3b11f656`.
-
-- server-side secret gate: **PASS**;
-- hosted `/build` connectivity: **PASS**;
-- three DWS document operations: **PASS**;
-- source grounding for page / bbox / confidence: **PASS**;
-- sanitized artifact upload: **PASS**;
-- resulting release state: `REVIEW_REQUIRED` because the real extraction produced a cross-document Shipment ID disagreement, which ReleaseProof surfaced rather than silently releasing.
-
-The live provider response omitted documented `pageIndex` while retaining an ordered `pages[]` array and grounded key/value boxes. The historical normalizer uses ordered page position only when `pageIndex` is absent and labels that provenance path `ordered-page-position`; a present malformed index still fails closed.
-
-This historical run is not relabelled as Data Extraction API acceptance.
-
-## Differential Reverification evidence boundary
-
-The controlled evaluation verifies the mechanism:
-
-- a whole-file non-material revision causes a blanket-version baseline to preserve `0/1` prior reviews while Differential Reverification preserves `1/1`;
-- a confidence-only drift does not masquerade as a semantic evidence change;
-- a material reviewed evidence value change invalidates the old review and returns the packet to `REVIEW_REQUIRED`;
-- bbox movement within the review's frozen tolerance preserves authority, while a movement outside that historical tolerance invalidates it;
-- changing a later runtime bbox default cannot reinterpret prior policy-bound authority;
-- unsupported equivalence-policy versions fail closed;
-- page-level digests can localize changed-page blast radius.
-
-A hosted Differential Reverification acceptance harness was implemented earlier. The account subsequently returned HTTP `402` on the first Processor `/build` request. Therefore:
-
-- deterministic Differential Reverification: **PASS**;
-- hosted core DWS integration: **PASS**;
-- hosted Differential Reverification rerun: **NON-BLOCKING LIMITATION — QUOTA_402**;
-- no claim is made that the hosted differential proof passed.
-
-## DWS-native v2 hosted attempt — PARTIAL RESULT
-
-A bounded DWS-native v2 run was executed after event credits were added:
-
-- workflow run `33295050008` at trigger commit `987c3a7a7a13605d7cd9c5e7a1433648d42cfd81`;
-- Processor OCR + flatten canonicalization: **PASS_HOSTED** (`1` call);
-- Data Extraction `/extraction/extract`: **FAIL_HTTP_403** on the first request;
-- page isolation: **UNRUN_AFTER_UPSTREAM_FAILURE**;
-- Processor signing: **UNRUN_AFTER_UPSTREAM_FAILURE**;
-- sanitized evidence artifact id: `9727139742`;
-- artifact ZIP SHA-256: `6f9cb20f5439b12a5ee674ca859521f0fac1778563f99c532e2f4d7a466d7986`.
-
-The HTTP 403 is classified as a credential-class mismatch: the run used the historical Processor product key for Data Extraction. Current Nutrient sample material states that Data Extraction uses a separate product key. The request wire shape itself matches the live-proven Nutrient sample. The corrected harness now fails before any provider call unless both product credentials are present.
-
-This partial result is not represented as end-to-end v2 PASS. Detailed immutable evidence is in `docs/hosted-v2-acceptance-2026-08-30.md`.
-
-## Production deployment — PASS for retained evidence surface
-
-Dedicated Vercel project:
-
-- project: `evidencebound-releaseproof-dws`;
-- project ID: `prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`;
-- production alias: `https://evidencebound-releaseproof-dws.vercel.app`;
-- previously accepted production revision: `dpl_DgptupzTPrqx9HsySqWtwenmUNoA`;
-- framework/runtime: FastAPI / Python 3.12;
-- `/`, `/health`, `/api/live-evidence`, `/api/evaluation`, `/api/demo`: **HTTP 200 PASS** at the retained acceptance revision.
-
-A new production acceptance must be recorded after this refactor reaches `main`; the previous deployment evidence is historical until then.
-
-## Verification matrix
-
-Frozen-authority code head GitHub Actions run `32750626503`:
-
-- Python 3.11 GitHub Actions: **56/56 PASS**;
-- Python 3.12 GitHub Actions: **56/56 PASS**;
-- Python 3.13 GitHub Actions: **56/56 PASS**;
-- compile gate: **PASS**;
-- synthetic three-PDF gate: **PASS**;
-- render-equivalent non-material revision gate: **PASS**;
-- source snapshot artifact: **PASS**;
-- hosted Processor core acceptance: **PASS / historical retained evidence**;
-- Processor canonicalization v2 hosted run: **PASS_HOSTED_RUN_33295050008**;
-- Data Extraction v2 hosted run: **FAIL_HTTP_403_CREDENTIAL_CLASS_RUN_33295050008**;
-- DWS Viewer hosted review flow: **UNRUN**;
-- Processor `/sign` hosted run: **UNRUN_AFTER_UPSTREAM_FAILURE**;
-- hosted Differential Reverification rerun: **NON-BLOCKING LIMITATION — QUOTA_402**;
-- real reviewer-time or customer metrics: **UNVERIFIED**.
-
-See `docs/live-dws-evidence.md`, `docs/hosted-v2-acceptance-2026-08-30.md`, `docs/vercel-production-evidence.md`, `docs/claims-ledger.md`, `docs/frozen-authority-policy.md`, `docs/evidencebound-core-transfer.md`, `qa/QA_RECEIPT.json`, and `handoff/NUTRIENT_JUDGE_PACK.md`.
+- `docs/hosted-v2-core-acceptance-2026-08-30.md`
+- `docs/hosted-v2-acceptance-2026-08-30.md`
+- `docs/live-dws-evidence.md`
+- `docs/frozen-authority-policy.md`
+- `docs/claims-ledger.md`
+- `qa/QA_RECEIPT.json`
+- `handoff/NUTRIENT_JUDGE_PACK.md`
