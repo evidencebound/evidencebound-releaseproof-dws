@@ -34,7 +34,7 @@
     }
   ],
   "initial_state": "REVIEW_REQUIRED",
-  "manifest_sha256": "cbbfffd3d02863de2969a24c0a84dcd0ec729334e130cd7cb8d047a8d3b1ce1f",
+  "manifest_sha256": "376b7a1333540e21ed61b4c380fe0eb7e8c592e521b1080a47aa827c62938239",
   "material_revision": {
     "changed_documents": [
       "shipping"

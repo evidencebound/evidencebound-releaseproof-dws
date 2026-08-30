@@ -11,6 +11,10 @@ from typing import Any
 EVIDENCE_EQUIVALENCE_POLICY_VERSION = "evidence-equivalence/1"
 VALUE_NORMALIZATION_VERSION = "nfkc-whitespace/1"
 BBOX_METRIC_VERSION = "axis-absolute/1"
+COORDINATE_SPACE_UNSPECIFIED = "coordinate-space/unspecified/1"
+COORDINATE_SPACE_NUTRIENT_PROCESSOR_CANONICAL = "nutrient-processor-canonical-rendition/1"
+COORDINATE_SPACE_NUTRIENT_LEGACY = "nutrient-legacy-or-original-rendition/1"
+COORDINATE_SPACE_CONTROLLED_SPATIAL = "releaseproof-controlled-spatial-json/1"
 
 
 def canonical(value: Any) -> bytes:
@@ -78,6 +82,7 @@ class EvidenceIdentity:
     normalized_value: str
     bounds: tuple[float, float, float, float]
     value_normalization: str = VALUE_NORMALIZATION_VERSION
+    coordinate_space: str = COORDINATE_SPACE_UNSPECIFIED
 
     def payload(self) -> dict[str, Any]:
         return {
@@ -87,6 +92,7 @@ class EvidenceIdentity:
             "normalized_value": self.normalized_value,
             "bounds": list(self.bounds),
             "value_normalization": self.value_normalization,
+            "coordinate_space": self.coordinate_space,
         }
 
 
@@ -104,6 +110,7 @@ def evidence_identity_equivalent(
         or left.field_path != right.field_path
         or left.normalized_value != right.normalized_value
         or left.value_normalization != right.value_normalization
+        or left.coordinate_space != right.coordinate_space
     ):
         return False
     return all(abs(a - b) <= bbox_tolerance for a, b in zip(left.bounds, right.bounds, strict=True))
@@ -125,6 +132,7 @@ def evidence_sets_equivalent(
             item.field_path,
             item.normalized_value,
             item.value_normalization,
+            item.coordinate_space,
             item.bounds,
         )
 
@@ -168,6 +176,16 @@ class Citation:
     reading_order: int | None = None
     value_normalization: str = VALUE_NORMALIZATION_VERSION
 
+    @property
+    def coordinate_space(self) -> str:
+        if self.page_hash_source in {"canonical-page-pdf", "canonical-rendition"} or self.source_evidence:
+            return COORDINATE_SPACE_NUTRIENT_PROCESSOR_CANONICAL
+        if self.page_hash_source == "processor-page-json-legacy":
+            return COORDINATE_SPACE_NUTRIENT_LEGACY
+        if self.page_hash_source == "data-extraction-spatial-page-json":
+            return COORDINATE_SPACE_CONTROLLED_SPATIAL
+        return COORDINATE_SPACE_UNSPECIFIED
+
     def identity(self, *, fallback_field_path: str = "") -> EvidenceIdentity:
         field_path = self.field_path or fallback_field_path
         if not field_path:
@@ -179,6 +197,7 @@ class Citation:
             normalized_value=self.normalized_value,
             bounds=self.bounds,
             value_normalization=self.value_normalization,
+            coordinate_space=self.coordinate_space,
         )
 
 
@@ -201,6 +220,7 @@ class FieldValue:
             normalized_value=normalized_value,
             bounds=self.citation.bounds,
             value_normalization=self.citation.value_normalization,
+            coordinate_space=self.citation.coordinate_space,
         )
 
 
