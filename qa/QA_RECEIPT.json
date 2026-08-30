@@ -1,7 +1,7 @@
 {
-  "snapshot_date": "2026-08-24",
-  "submission_readiness": "READY_WITH_HOSTED_V2_UNRUN",
-  "evidence_class": "controlled semantic authority mechanism + public GitHub CI + historical hosted Nutrient Processor acceptance + current refactored Vercel production acceptance",
+  "snapshot_date": "2026-08-30",
+  "submission_readiness": "READY_WITH_HOSTED_V2_CREDENTIAL_BLOCKER",
+  "evidence_class": "controlled semantic authority mechanism + public GitHub CI + historical hosted Nutrient Processor acceptance + current refactored Vercel production acceptance + partial hosted DWS-native v2 acceptance",
   "checks": {
     "semantic_evidence_identity": "PASS",
     "stable_logical_finding_identity": "PASS",
@@ -17,13 +17,14 @@
     "page_level_blast_radius": "PASS",
     "retained_controlled_result_parity": "PASS",
     "retained_evaluation_result_parity": "PASS",
-    "processor_canonicalize_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
-    "processor_page_isolation_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
-    "data_extraction_request_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
-    "data_extraction_grounding_normalizer": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
+    "processor_canonicalize_contract": "PASS_HOSTED_RUN_33295050008",
+    "processor_page_isolation_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN_AFTER_UPSTREAM_FAILURE",
+    "data_extraction_request_contract": "FAIL_HOSTED_HTTP_403_CREDENTIAL_CLASS_RUN_33295050008",
+    "data_extraction_grounding_normalizer": "PASS_CONTRACT_TEST_HOSTED_UNRUN_AFTER_UPSTREAM_FAILURE",
     "nutrient_studio_schema_generation": "UNRUN_EXTERNAL_PRODUCT_STEP",
     "viewer_review_projection": "PASS_PROJECTION_TEST_HOSTED_UNRUN",
-    "processor_sign_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN",
+    "processor_sign_contract": "PASS_CONTRACT_TEST_HOSTED_UNRUN_AFTER_UPSTREAM_FAILURE",
+    "hosted_v2_dual_product_key_preflight": "PASS_RUN_33295329944",
     "vercel_root_entrypoint_contract": "PASS",
     "compileall": "PASS",
     "controlled_demo": "PASS",
@@ -40,6 +41,7 @@
     "public_github_repo": "PASS",
     "public_github_ci_semantic_refactor": "PASS_RUN_32751759793",
     "public_github_ci_vercel_entrypoint_fix": "PASS_RUN_32757860664",
+    "public_github_ci_data_extraction_credential_fix": "PASS_RUN_33295329944",
     "public_vercel_project": "PASS",
     "public_vercel_build": "PASS",
     "public_vercel_root": "PASS_HTTP_200",
@@ -66,7 +68,8 @@
       "page",
       "field_path",
       "normalized_value",
-      "bounds_within_frozen_tolerance"
+      "bounds_within_frozen_tolerance",
+      "coordinate_space"
     ],
     "equivalence_policy": {
       "version": "evidence-equivalence/1",
@@ -103,10 +106,13 @@
       "processor_digital_signature"
     ],
     "semantic_refactor_merge_commit": "3584e577f62f65aec2f977028970c78d15e06c18",
+    "coordinate_space_hardening_merge_commit": "3cc71f51dab8d75f82022c11df6afafdda20fd9e",
+    "hosted_v2_harness_merge_commit": "32369d80ff4bd83e041d67b544b20c4753d3328b",
     "vercel_entrypoint_fix_merge_commit": "bd670240a681ad139921597ba10b534a570c07f4",
     "semantic_refactor_tests_per_python_lane": 56,
     "semantic_refactor_ci_run_id": 32751759793,
     "vercel_entrypoint_fix_ci_run_id": 32757860664,
+    "data_extraction_credential_fix_ci_run_id": 33295329944,
     "python_lanes": ["3.11", "3.12", "3.13"]
   },
   "live_dws_evidence": {
@@ -126,15 +132,32 @@
     "quota_aware_harness_public_ci_run_id": 32215419913,
     "quota_aware_live_run_id": 32215515505,
     "quota_aware_live_result": "HTTP_402_ON_FIRST_BUILD",
+    "v2_partial_run_id": 33295050008,
+    "v2_partial_trigger_commit": "987c3a7a7a13605d7cd9c5e7a1433648d42cfd81",
+    "v2_partial_job_id": 99213156711,
+    "v2_partial_artifact_id": 9727139742,
+    "v2_partial_artifact_digest": "sha256:6f9cb20f5439b12a5ee674ca859521f0fac1778563f99c532e2f4d7a466d7986",
+    "v2_partial_provider_calls": {
+      "processor": {
+        "canonicalize": 1,
+        "isolate_page": 0,
+        "sign": 0
+      },
+      "data_extraction": 1
+    },
+    "v2_partial_result": "PROCESSOR_CANONICALIZE_PASS_THEN_DATA_EXTRACTION_HTTP_403",
+    "v2_partial_failure_class": "WRONG_PRODUCT_CREDENTIAL_CLASS",
     "quota_effect_on_submission": "NON_BLOCKING",
-    "further_live_calls": "STOPPED_TO_AVOID_UNNECESSARY_SPEND"
+    "further_live_calls": "BLOCKED_UNTIL_SEPARATE_DATA_EXTRACTION_PRODUCT_KEY_IS_CONFIGURED"
   },
   "v2_hosted_status": {
-    "processor_ocr_flatten": "UNRUN",
-    "processor_page_isolation": "UNRUN",
-    "data_extraction": "UNRUN",
+    "processor_ocr_flatten": "PASS_HOSTED_RUN_33295050008",
+    "processor_page_isolation": "UNRUN_AFTER_UPSTREAM_FAILURE",
+    "data_extraction": "FAIL_HTTP_403_WRONG_PRODUCT_CREDENTIAL_RUN_33295050008",
     "viewer_review_flow": "UNRUN",
-    "processor_sign": "UNRUN"
+    "processor_sign": "UNRUN_AFTER_UPSTREAM_FAILURE",
+    "differential_reverification": "UNRUN_AFTER_UPSTREAM_FAILURE",
+    "corrected_run_blocker": "NUTRIENT_DATA_EXTRACTION_API_KEY_REPOSITORY_SECRET_REQUIRED"
   },
   "production_evidence": {
     "provider": "Vercel",
@@ -149,7 +172,7 @@
     "deployment_state": "READY",
     "accepted_endpoints": ["/", "/health", "/api/live-evidence", "/api/evaluation", "/api/demo"],
     "runtime_errors_on_acceptance_paths": "NONE_OBSERVED",
-    "runtime_nutrient_calls": "DISABLED_TO_PRESERVE_EXHAUSTED_QUOTA",
+    "runtime_nutrient_calls": "DISABLED",
     "nutrient_secret_in_vercel": "NOT_REQUIRED",
     "acceptance_document": "docs/production-acceptance-2026-08-24.md"
   },
@@ -166,11 +189,12 @@
   },
   "limits": [
     "Controlled fixtures are not live DWS output.",
-    "Historical hosted core DWS integration passed; new DWS-native paths remain UNRUN until separately accepted with provider credentials.",
+    "Historical hosted core DWS integration passed. The DWS-native v2 attempt is now partially hosted-tested: Processor canonicalization passed, Data Extraction returned HTTP 403 because the Processor product key was used instead of a separate Data Extraction product key.",
+    "Canonical page isolation, hosted DWS-native Differential Reverification and signing remain unrun after the upstream Data Extraction credential failure.",
     "The old manifest never becomes current after a source revision; a new manifest is minted with only still-grounded authority carried forward under each review's frozen policy.",
     "Frozen equivalence policy supports deterministic replay but is not by itself regulatory compliance, certification, or legal non-repudiation.",
     "The synthetic acceptance-harness review is not a real human-review metric.",
-    "Current Vercel production acceptance proves the refactored evidence surface only; it does not prove hosted execution of the new DWS-native v2 provider calls.",
+    "Current Vercel production acceptance proves the refactored evidence surface only; it does not prove end-to-end hosted execution of the DWS-native v2 provider path.",
     "No real reviewer-time savings or market-size claim is made."
   ]
 }
