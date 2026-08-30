@@ -1,0 +1,4 @@
+corrected hosted DWS v2 acceptance after schema contract fix
+trigger_date=2026-08-30
+credential_model=processor+data-extraction-separate
+schema_contract=supported-keywords-only
