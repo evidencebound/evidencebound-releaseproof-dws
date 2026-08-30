@@ -1,0 +1,98 @@
+name: live-dws-v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - run/live-dws-v2
+    paths:
+      - acceptance/run-v2.txt
+
+permissions:
+  contents: read
+
+jobs:
+  hosted-v2-acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NUTRIENT_API_KEY: ${{ secrets.NUTRIENT_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Require server-side Nutrient key
+        shell: bash
+        run: |
+          if [ -z "$NUTRIENT_API_KEY" ]; then
+            echo "NUTRIENT_API_KEY repository secret is required." >&2
+            exit 2
+          fi
+
+      - name: Install ReleaseProof
+        run: python -m pip install -e '.[dev]'
+
+      - name: Run quota-bounded hosted v2 acceptance
+        id: acceptance
+        shell: bash
+        run: |
+          set +e
+          PYTHONPATH=src python scripts/run_live_dws_v2_acceptance.py \
+            --output live-dws-v2-receipt.json \
+            --signed-output live-dws-v2-signed-release.pdf
+          status=$?
+          set -e
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload sanitized hosted evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-dws-v2-acceptance
+          path: |
+            live-dws-v2-receipt.json
+            live-dws-v2-signed-release.pdf
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Publish receipt summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f live-dws-v2-receipt.json ]; then
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          data = json.loads(Path("live-dws-v2-receipt.json").read_text())
+          print("## ReleaseProof hosted DWS v2 acceptance")
+          print(f"- status: **{data.get('status', 'UNKNOWN')}**")
+          print(f"- execution: `{data.get('execution', 'UNKNOWN')}`")
+          print(f"- schema_source: `{data.get('schema_source', 'UNKNOWN')}`")
+          calls = data.get("provider_calls", {})
+          print(f"- provider_calls: `{json.dumps(calls, sort_keys=True)}`")
+          if data.get("status") == "PASS":
+              nonmaterial = data.get("nonmaterial_revision", {})
+              material = data.get("material_revision", {})
+              print(f"- nonmaterial_state: **{nonmaterial.get('current_state', 'UNKNOWN')}**")
+              print(f"- target_review_preserved: **{nonmaterial.get('target_review_preserved', False)}**")
+              print(f"- material_state: **{material.get('current_state', 'UNKNOWN')}**")
+              print(f"- target_review_invalidated: **{material.get('target_review_invalidated', False)}**")
+              print(f"- signed_pdf_sha256: `{data.get('signed_release', {}).get('signed_pdf_sha256', 'UNKNOWN')}`")
+          else:
+              error = data.get("error", {})
+              print(f"- error_type: `{error.get('type', 'UNKNOWN')}`")
+              print(f"- error: `{error.get('message', 'UNKNOWN')}`")
+          PY
+          fi
+
+      - name: Enforce acceptance result
+        shell: bash
+        run: |
+          if [ "${{ steps.acceptance.outputs.exit_code }}" != "0" ]; then
+            echo "Hosted DWS v2 acceptance failed; see sanitized receipt artifact." >&2
+            exit 1
+          fi
