@@ -35,3 +35,8 @@ def test_live_workflow_preflights_both_product_keys():
         "NUTRIENT_DATA_EXTRACTION_API_KEY: ${{ secrets.NUTRIENT_DATA_EXTRACTION_API_KEY }}"
         in workflow
     )
+
+
+def test_acceptance_schema_uses_only_supported_data_extraction_keywords(monkeypatch):
+    module = _load_acceptance_module(monkeypatch)
+    assert "additionalProperties" not in module.SCHEMA
