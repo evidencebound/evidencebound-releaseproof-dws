@@ -35,7 +35,6 @@ SCHEMA = {
         "declared_value": {"type": "string", "description": "Declared Value"},
     },
     "required": ["shipment_id", "quantity", "currency", "declared_value"],
-    "additionalProperties": False,
 }
 SCHEMA_SOURCE = "acceptance-test-schema:not-studio-generated"
 TARGET_FIELD = "shipment_id"
