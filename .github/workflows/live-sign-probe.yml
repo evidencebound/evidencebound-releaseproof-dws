@@ -1,0 +1,67 @@
+name: live-sign-probe
+
+on:
+  push:
+    branches:
+      - run/live-sign-probe
+    paths:
+      - acceptance/run-sign-probe.txt
+
+permissions:
+  contents: read
+
+jobs:
+  sign-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      NUTRIENT_API_KEY: ${{ secrets.NUTRIENT_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Require Processor key
+        shell: bash
+        run: |
+          if [ -z "$NUTRIENT_API_KEY" ]; then
+            echo "NUTRIENT_API_KEY is required." >&2
+            exit 2
+          fi
+
+      - name: Install ReleaseProof
+        run: python -m pip install -e '.[dev]'
+
+      - name: Run isolated sign probe
+        id: probe
+        shell: bash
+        run: |
+          set +e
+          PYTHONPATH=src python scripts/run_live_sign_probe.py \
+            --receipt live-sign-probe-receipt.json \
+            --signed-output live-sign-probe-signed.pdf
+          status=$?
+          set -e
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload sanitized evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-sign-probe
+          path: |
+            live-sign-probe-receipt.json
+            live-sign-probe-signed.pdf
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Enforce probe result
+        shell: bash
+        run: |
+          if [ "${{ steps.probe.outputs.exit_code }}" != "0" ]; then
+            echo "Optional Nutrient sign probe failed; see receipt artifact." >&2
+            exit 1
+          fi
