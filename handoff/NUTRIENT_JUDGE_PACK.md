@@ -8,7 +8,7 @@
 
 **Invention:** Differential Reverification with evidence-scoped human authority, frozen equivalence policy and reminted current release state.
 
-**Submission status:** **READY** except final media/form work and a production redeploy of the updated evidence surface.
+**Submission status:** **READY** except final media/form work. The current hosted v2 core and current Vercel judge surface are both accepted.
 
 ## Prize thesis
 
@@ -18,32 +18,15 @@ ReleaseProof answers a different question:
 
 > After evidence changes, which historical human decisions are still valid, under the exact rules that were in force when those decisions were granted?
 
-The mechanism separates:
-
-1. cryptographic integrity;
-2. semantic evidence identity;
-3. historical human authority semantics.
+The mechanism separates cryptographic integrity, semantic evidence identity and historical human-authority semantics.
 
 **Memory hook:** “The human decision carries its own rules of continued validity.”
 
 ## Product boundary
 
-Nutrient owns:
+Nutrient owns Processor OCR/flatten/page operations, Data Extraction grounding, Viewer review primitives and digital-signature tooling.
 
-- Processor OCR/flatten/page operations;
-- Data Extraction grounding;
-- Viewer annotations/comments/layers;
-- digital-signature tooling.
-
-ReleaseProof owns:
-
-- cross-document reconciliation;
-- stable logical finding identity;
-- human authority binding;
-- frozen historical equivalence policy;
-- Differential Reverification;
-- selective invalidation/carry-forward;
-- current release lifecycle.
+ReleaseProof owns cross-document reconciliation, stable logical finding identity, human authority binding, frozen historical equivalence policy, Differential Reverification, selective invalidation/carry-forward and current release lifecycle.
 
 Semantic review key:
 
@@ -62,9 +45,9 @@ Every new semantic `HumanReview` stores `EvidenceEquivalencePolicy` with:
 
 `authority_binding` commits to the finding, reviewer decision, reviewer identity, rationale, reviewed evidence identities and frozen policy.
 
-A later runtime default cannot rescue or invalidate an old review by silently changing tolerance. Unknown historical policy versions fail closed. Legacy reviews with no policy remain exact-binding only.
+A later runtime default cannot silently reinterpret an old review by changing tolerance. Unknown historical policy versions fail closed. Legacy reviews with no policy remain exact-binding only.
 
-This is auditability/deterministic replay, not a claim of SOC 2, FDA 21 CFR Part 11, ISO compliance/certification or legal non-repudiation.
+This is auditability and deterministic replay, not a claim of SOC 2, FDA 21 CFR Part 11, ISO compliance/certification or legal non-repudiation.
 
 ## Hosted DWS-native v2 core - PASS
 
@@ -100,8 +83,7 @@ Before the optional signing call was reachable, the harness had already asserted
 - canonical page SHA-256 binding: **PASS_HOSTED**;
 - coordinate space `nutrient-processor-canonical-rendition/1`: **PASS_HOSTED**;
 - intentional cross-document Shipment ID mismatch: **PASS_HOSTED**;
-- synthetic acceptance-harness review brought baseline to `VERIFIED`: **PASS**;
-- byte-different non-material revision preserved targeted historical authority and remained `VERIFIED`: **PASS_HOSTED**;
+- byte-different non-material revision preserved targeted authority and remained `VERIFIED`: **PASS_HOSTED**;
 - material Shipment ID revision invalidated targeted authority and returned to `REVIEW_REQUIRED`: **PASS_HOSTED**.
 
 Therefore **DWS-native Differential Reverification core = PASS_HOSTED**.
@@ -110,29 +92,21 @@ The review used in this acceptance is explicitly synthetic. It is not a real cus
 
 ## Optional signing - FAIL_HTTP_400
 
-The same live run reached Processor `/sign` only after all core assertions above had passed. `/sign` returned HTTP 400.
+The accepted live run reached Processor `/sign` only after all core assertions above had passed. `/sign` returned HTTP 400.
 
-A separate low-cost diagnostic tested a Processor-normalized synthetic PDF without any Data Extraction calls:
+A separate low-cost diagnostic tested a Processor-normalized synthetic PDF with no Data Extraction calls:
 
 - run: `33296422243`;
 - job: `99216757835`;
 - artifact: `9727544255`;
-- artifact ZIP SHA-256: `9e6f0d73e0707d826e300dadbc2b02fbf7527c7a229b73998143493ac7e17058`;
 - Processor normalization: **PASS**;
 - `/sign`: **FAIL_HTTP_400**.
 
-This rules out the narrow explanation that only the locally generated pre-normalized PDF caused the failure. Signing remains a separate provider/account/service limitation and is not required for the core invention claim.
-
-Do not make more signing calls unless Nutrient gives a specific entitlement/configuration or request-shape correction.
+This rules out the narrow hypothesis that only the locally generated pre-normalized PDF caused the failure. Do not make more signing calls unless Nutrient gives a specific entitlement/configuration or request-shape correction.
 
 ## Viewer boundary
 
-The Viewer projection is covered by deterministic tests for:
-
-- finding annotation;
-- reviewer-specific layer;
-- review comment metadata;
-- named approved-state layer.
+The Viewer projection is covered by deterministic tests for finding annotation, reviewer-specific layer, review comment metadata and named approved-state layer.
 
 Hosted Viewer execution remains **UNRUN**. Do not call it PASS.
 
@@ -146,22 +120,21 @@ Historical Processor-only acceptance remains immutable evidence:
 - digest `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`;
 - manifest `a5716cc3f5580a6dde1e21d4199675bb65f2b46e92b7b65a334f05a1d57663cc`.
 
-That run produced a real cross-document Shipment ID disagreement and ReleaseProof returned `REVIEW_REQUIRED` instead of silently releasing.
+That run produced a cross-document Shipment ID disagreement and ReleaseProof returned `REVIEW_REQUIRED` instead of silently releasing.
 
-Its response omitted documented `pageIndex`. Nutrient Solutions Engineering confirmed this was a real provider/documentation discrepancy and escalated it. ReleaseProof's historical compatibility path uses ordered page position only when `pageIndex` is absent and fails closed when a present index is malformed.
+The historical response omitted documented `pageIndex`. Nutrient Solutions Engineering confirmed this was a real provider/documentation discrepancy and escalated it. The compatibility path uses ordered page position only when `pageIndex` is absent and fails closed when a present index is malformed.
 
 ## Failure chronology retained honestly
 
-Do not hide the development evidence:
-
 - earlier hosted Differential Reverification attempt: HTTP 402 after quota exhaustion;
-- run `33295050008`: Processor canonicalization PASS, Data Extraction HTTP 403 because the historical Processor key was used instead of the separate Data Extraction product key;
-- run `33295993491`: credential class corrected, Data Extraction HTTP 400 due unsupported `additionalProperties` in acceptance schema;
-- run `33296171708`: DWS-native core reached and passed all Differential Reverification assertions; optional signing then returned HTTP 400.
+- run `33295050008`: Processor canonicalization PASS, Data Extraction HTTP 403 because the Processor key was used instead of the separate Data Extraction product key;
+- run `33295993491`: credential class corrected, Data Extraction HTTP 400 due unsupported `additionalProperties` in the acceptance schema;
+- run `33296171708`: DWS-native core passed all Differential Reverification assertions; optional signing then returned HTTP 400;
+- run `33296422243`: isolated Processor-normalized sign probe reproduced HTTP 400.
 
-The first three states are chronology, not the current core acceptance state.
+These are chronology, not the current core acceptance state.
 
-## Public judge surface
+## Public judge surface - CURRENT PRODUCTION PASS
 
 Production URL:
 
@@ -171,26 +144,37 @@ Repository:
 
 `https://github.com/evidencebound/evidencebound-releaseproof-dws`
 
-The last accepted Vercel deployment predates the new hosted-v2 evidence. Production is therefore **STALE** until redeployed from current `main`.
+Accepted Vercel deployment:
 
-Target judge endpoints after redeploy:
+- deployment id: `dpl_8yEDRk4Bwz2meH2vwSzuZTY5UNaM`;
+- immutable URL: `https://evidencebound-releaseproof-lj87ka83w.vercel.app`;
+- deployed commit: `77bda0ba7c15a79ad0c9e6b2e26931c206528504`;
+- state: **READY**;
+- target: `production`;
+- framework: FastAPI;
+- region: `iad1`.
 
-- `/` - current judge narrative;
-- `/health` - `dws_native_v2_core_hosted=PASS`, signing `FAIL_HTTP_400`, Viewer `UNRUN`;
-- `/api/live-evidence` - backward-compatible historical Processor receipt;
-- `/api/v2-evidence` - current v2 hosted evidence;
-- `/api/demo`;
-- `/api/evaluation`.
+Production acceptance on 2026-08-30:
 
-No public route performs live Nutrient calls.
+- `/`: **HTTP 200 PASS** and visibly reports `DWS-NATIVE V2 CORE · HOSTED PASS`;
+- `/health`: **HTTP 200 PASS**, with `dws_native_v2_core_hosted=PASS`, `live_differential_reverification=PASS_HOSTED`, signing `FAIL_HTTP_400`, Viewer `UNRUN`;
+- `/api/v2-evidence`: **HTTP 200 PASS**;
+- `/api/live-evidence`: **HTTP 200 PASS**;
+- `/api/demo`: **HTTP 200 PASS**;
+- `/api/evaluation`: **HTTP 200 PASS**;
+- runtime error clusters on accepted judge paths: **none observed**.
+
+No public route performs live Nutrient calls. The public service exposes retained evidence only.
+
+See `docs/production-acceptance-2026-08-30.md`.
 
 ## Prize narrative
 
-**Progress:** public implementation, real historical Processor evidence, current hosted Processor + Data Extraction + canonical-page evidence, hosted Differential Reverification, frozen historical authority semantics, public CI on Python 3.11/3.12/3.13, production evidence surface pending current redeploy.
+**Progress:** public implementation, historical Processor evidence, current hosted Processor + Data Extraction + canonical-page evidence, hosted Differential Reverification, frozen historical authority semantics, green public CI on Python 3.11/3.12/3.13 and current production evidence surface.
 
 **Concept:** byte changes should not blindly reset all human work, and stable filenames should not blindly preserve it. ReleaseProof proves whether reviewed business evidence is still equivalent and evaluates historical authority under its original comparison policy.
 
-**Feasibility:** Nutrient does native document work; ReleaseProof stays focused on reconciliation, authority continuity and selective invalidation. The competition-critical v2 core now has hosted evidence rather than contract-only evidence.
+**Feasibility:** Nutrient performs native document work; ReleaseProof stays focused on reconciliation, authority continuity and selective invalidation. The competition-critical v2 core has hosted evidence rather than contract-only evidence.
 
 **Sponsor memory hook:** “After the packet changes, prove which human review is still grounded in current evidence under the rules the reviewer actually approved, and which one is not.”
 
@@ -206,12 +190,12 @@ No public route performs live Nutrient calls.
 
 Prioritize in final media/application:
 
-1. `DWS-NATIVE V2 CORE - HOSTED PASS` evidence and run id `33296171708`;
+1. `DWS-NATIVE V2 CORE - HOSTED PASS` and run `33296171708`;
 2. canonical Processor rendition -> Data Extraction grounding -> page hash;
 3. non-material revision -> authority preserved -> `VERIFIED`;
 4. material Shipment ID change -> authority invalidated -> `REVIEW_REQUIRED`;
 5. Frozen Authority Policy example: review at tolerance 2.0 cannot be reinterpreted by later runtime 10.0;
 6. explicit limitation: optional signing HTTP 400, Viewer UNRUN;
-7. boundary: Nutrient produces trustworthy document evidence; ReleaseProof determines whether historical human authority still holds.
+7. boundary: Nutrient produces source-grounded document evidence; ReleaseProof determines whether historical human authority still holds.
 
-See `README.md`, `docs/hosted-v2-core-acceptance-2026-08-30.md`, `docs/live-dws-evidence.md`, `docs/frozen-authority-policy.md`, `docs/claims-ledger.md`, and `qa/QA_RECEIPT.json`.
+See `README.md`, `docs/hosted-v2-core-acceptance-2026-08-30.md`, `docs/production-acceptance-2026-08-30.md`, `docs/frozen-authority-policy.md`, `docs/claims-ledger.md`, and `qa/QA_RECEIPT.json`.
