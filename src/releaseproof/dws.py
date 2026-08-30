@@ -603,7 +603,7 @@ def process_with_native_dws(
     mode: str = "structure",
     field_aliases: dict[str, str] | None = None,
 ) -> ExtractedDocument:
-    """Canonicalize with Processor, extract with Data Extraction, hash native page PDFs."""
+    """Canonicalize, extract grounded evidence, then hash only referenced pages."""
     canonical_pdf = processor.canonicalize_pdf(path)
     payload = extraction.extract_pdf(
         canonical_pdf,
@@ -611,19 +611,21 @@ def process_with_native_dws(
         schema=schema,
         mode=mode,
     )
-    output = payload.get("output", {})
-    pages = output.get("pages", []) if isinstance(output, dict) else []
-    page_numbers: list[int] = []
-    if isinstance(pages, list):
-        for index, page_info in enumerate(pages):
-            if isinstance(page_info, dict) and "page" in page_info:
-                page_numbers.append(int(page_info["page"]))
-            else:
-                page_numbers.append(index + 1)
+
+    # Provider top-level page summaries are not authoritative for review identity.
+    # First validate the grounded field metadata and discover the pages actually
+    # referenced by evidence; then isolate/hash exactly those pages through Processor.
+    preliminary = normalize_data_extraction(
+        document_id,
+        canonical_pdf,
+        payload,
+        schema_source=schema_source,
+        field_aliases=field_aliases,
+    )
+    page_numbers = sorted({field.citation.page for field in preliminary.fields})
     page_pdf_bytes = {
         page: processor.isolate_page(canonical_pdf, page=page)
-        for page in sorted(set(page_numbers))
-        if page >= 1
+        for page in page_numbers
     }
     return normalize_data_extraction(
         document_id,
