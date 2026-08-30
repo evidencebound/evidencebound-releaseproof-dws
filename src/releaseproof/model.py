@@ -178,7 +178,7 @@ class Citation:
 
     @property
     def coordinate_space(self) -> str:
-        if self.page_hash_source in {"canonical-page-pdf", "canonical-rendition"}:
+        if self.page_hash_source in {"canonical-page-pdf", "canonical-rendition"} or self.source_evidence:
             return COORDINATE_SPACE_NUTRIENT_PROCESSOR_CANONICAL
         if self.page_hash_source == "processor-page-json-legacy":
             return COORDINATE_SPACE_NUTRIENT_LEGACY
