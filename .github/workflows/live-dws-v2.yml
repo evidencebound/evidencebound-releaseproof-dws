@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 20
     env:
       NUTRIENT_API_KEY: ${{ secrets.NUTRIENT_API_KEY }}
+      NUTRIENT_DATA_EXTRACTION_API_KEY: ${{ secrets.NUTRIENT_DATA_EXTRACTION_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -24,11 +25,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Require server-side Nutrient key
+      - name: Require server-side Nutrient product keys
         shell: bash
         run: |
           if [ -z "$NUTRIENT_API_KEY" ]; then
-            echo "NUTRIENT_API_KEY repository secret is required." >&2
+            echo "NUTRIENT_API_KEY repository secret is required for Processor." >&2
+            exit 2
+          fi
+          if [ -z "$NUTRIENT_DATA_EXTRACTION_API_KEY" ]; then
+            echo "NUTRIENT_DATA_EXTRACTION_API_KEY repository secret is required for Data Extraction." >&2
             exit 2
           fi
 
