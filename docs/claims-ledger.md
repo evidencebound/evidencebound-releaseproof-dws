@@ -3,119 +3,120 @@
 | Claim | Evidence class | Status |
 |---|---|---|
 | controlled packet reaches `REVIEW_REQUIRED` then `VERIFIED` after scoped review | deterministic fixtures/tests | VERIFIED / public CI |
-| non-material whole-file revision creates a new manifest and preserves the unchanged review | controlled evaluation + parity-locked retained result | VERIFIED / public CI |
-| confidence-only drift does not by itself change semantic evidence identity | semantic reverification regression test | VERIFIED / public CI |
+| non-material whole-file revision creates a new manifest and preserves unchanged review authority | controlled evaluation + parity-locked result | VERIFIED / public CI |
+| confidence-only drift does not by itself change semantic evidence identity | regression test | VERIFIED / public CI |
 | normalized-value change invalidates prior review authority | controlled evaluation + regression test | VERIFIED / public CI |
-| bbox movement within the review's frozen tolerance can preserve review; movement outside it invalidates review | semantic reverification regression tests | VERIFIED / public CI |
-| later runtime bbox defaults cannot reinterpret an existing policy-bound review | frozen-policy regression test | VERIFIED / public CI |
-| unsupported equivalence-policy versions fail closed to `REVIEW_REQUIRED` | frozen-policy regression test | VERIFIED / public CI |
-| changing the frozen equivalence policy changes `authority_binding` | authority-binding regression test | VERIFIED / public CI |
-| `authority_binding` is explicitly serialized into the release manifest | manifest serialization regression test | VERIFIED / public CI |
-| negative bbox tolerances are rejected | policy validation test | VERIFIED / public CI |
-| legacy reviews without frozen policy are not assigned inferred tolerance and remain exact-binding only | engine implementation + compatibility semantics | VERIFIED / public CI |
-| page-7 integrity change can leave page-2 review authority valid | page-level blast-radius regression test | VERIFIED / public CI |
-| stable logical finding ID is separate from changing semantic evidence binding | semantic reverification regression test | VERIFIED / public CI |
+| bbox movement within frozen tolerance can preserve review; movement outside invalidates | regression tests | VERIFIED / public CI |
+| later runtime bbox defaults cannot reinterpret existing policy-bound authority | frozen-policy regression test | VERIFIED / public CI |
+| unsupported equivalence-policy versions fail closed to `REVIEW_REQUIRED` | regression test | VERIFIED / public CI |
+| `authority_binding` commits to reviewed evidence and frozen policy and is serialized in the manifest | regression tests | VERIFIED / public CI |
+| legacy reviews without frozen policy remain exact-binding only | compatibility tests | VERIFIED / public CI |
+| page-level integrity can localize blast radius | page-level regression tests | VERIFIED / public CI |
+| Processor-canonical coordinate space is part of evidence identity | coordinate-space regression tests | VERIFIED / public CI |
+| bbox from different coordinate spaces cannot silently match | coordinate-space regression tests | VERIFIED / public CI |
 | malformed/missing source grounding fails closed | normalizer tests | VERIFIED / public CI |
-| controlled fixtures are explicitly distinguishable from live DWS | provenance labels/UI/tests | VERIFIED / public CI |
-| retained `results/controlled-demo.json` and `results/evaluation.json` match current executable mechanism | retained-result parity tests | VERIFIED / public CI |
-| Vercel entrypoint maps to a real root module exposing the FastAPI `app` | regression test + successful CLI deployment | VERIFIED / public CI + production |
-| hosted DWS request reached real Processor `/build` using repository secret | historical live GitHub Actions | VERIFIED |
-| hosted Processor returned parseable grounded key/value content with bbox and confidence | historical hosted Actions + retained artifact | VERIFIED |
-| live response may omit documented `pageIndex`; ordered-page-position compatibility is provenance-labelled and malformed present indices fail closed | live diagnostic + public CI | VERIFIED |
-| real hosted DWS processed a three-document synthetic packet and produced a current manifest | run `32215337912` | VERIFIED |
-| live ReleaseProof detected a cross-document disagreement and returned `REVIEW_REQUIRED` rather than releasing | historical live manifest | VERIFIED |
-| Processor-native OCR + flatten canonicalization adapter is implemented | contract tests | VERIFIED / hosted UNRUN |
-| Processor-native page isolation uses `parts[].pages` rather than local splitting | contract tests | VERIFIED / hosted UNRUN |
-| Data Extraction adapter uses `/extraction/extract` with external schema and `citationsEnabled: true` | contract tests against official request shape | VERIFIED / hosted UNRUN |
-| Data Extraction normalizer consumes provider page/bbox/confidence/source evidence and fails closed if grounding is missing | contract tests | VERIFIED / hosted UNRUN |
-| production schema is generated/refined in Nutrient Studio | provider execution | UNVERIFIED; repository only accepts external schema and makes no Studio-generation claim |
-| Viewer finding/review maps to annotation + reviewer-specific layer/comment + named approved layer | deterministic projection contract | VERIFIED / hosted Viewer UNRUN |
-| release artifact can be sealed through Processor `/sign` adapter | contract test | VERIFIED / hosted signing UNRUN |
-| hosted Differential Reverification preserves review after non-material revision | live differential acceptance | NON-BLOCKING LIMITATION - QUOTA_402 |
-| public repository Python 3.11/3.12/3.13 GitHub Actions matrix | GitHub Actions run `32757860664` | PASS on all three lanes |
-| current refactored Vercel evidence URL serves root/health/live-evidence/evaluation/demo | production deployment `dpl_7zdyqLmgv4PEyHxUPJkP6Dp3gDhn` | VERIFIED / HTTP 200 |
-| accepted Vercel deployment corresponds to entrypoint-fix main commit | Vercel deployment metadata | VERIFIED at `bd670240a681ad139921597ba10b534a570c07f4` |
-| public Vercel service performs no runtime Nutrient calls | route surface + health contract | VERIFIED on current refactored production |
-| accepted judge paths produced no runtime error clusters during acceptance | Vercel runtime errors/logs | VERIFIED |
-| Differential Reverification addresses a real corrected/re-issued packet workflow | Nutrient Solutions Engineering field feedback from customer projects | EXTERNAL FIELD OBSERVATION, not a market-size or roadmap claim |
+| hosted Processor canonicalization executes on DWS-native v2 path | run `33296171708` | **PASS_HOSTED** |
+| hosted Data Extraction executes on canonical Processor renditions | run `33296171708` | **PASS_HOSTED** |
+| hosted Data Extraction returns grounded page/bbox/confidence/source evidence usable by ReleaseProof | run `33296171708` | **PASS_HOSTED** |
+| hosted canonical page isolation/hash path executes | run `33296171708` | **PASS_HOSTED** |
+| hosted non-material source revision preserves targeted prior authority | run `33296171708` | **PASS_HOSTED** |
+| hosted material reviewed evidence change invalidates targeted prior authority | run `33296171708` | **PASS_HOSTED** |
+| hosted material change returns current packet to `REVIEW_REQUIRED` | run `33296171708` | **PASS_HOSTED** |
+| DWS-native Differential Reverification core executes against real hosted Nutrient services | run `33296171708` | **PASS_HOSTED** |
+| Processor `/sign` seals the final release artifact in the current account | runs `33296171708`, `33296422243` | **FAIL_HTTP_400** - not claimed as PASS |
+| Viewer finding/review maps to annotation + reviewer layer/comment + approved layer | deterministic projection | VERIFIED / hosted Viewer **UNRUN** |
+| production schema was generated/refined in Nutrient Studio | external product step | **UNVERIFIED / UNRUN** |
+| historical hosted Processor core processed a three-document synthetic packet | run `32215337912` | VERIFIED |
+| historical live output omitted documented `pageIndex`; ordered-position fallback is provenance-labelled and malformed present indices fail closed | historical diagnostic + CI; Nutrient SE feedback | VERIFIED observation |
+| real ReleaseProof surfaced a cross-document disagreement instead of silently releasing | historical run `32215337912` | VERIFIED |
+| public GitHub CI covers Python 3.11/3.12/3.13 | GitHub Actions | PASS |
+| current Vercel surface already exposes the new hosted-v2 status | deployment verification | **STALE / redeploy required** |
+| Differential Reverification addresses corrected/re-issued packet workflows | Nutrient Solutions Engineering field feedback | EXTERNAL FIELD OBSERVATION, not market-size claim |
 | mechanism reduces real reviewer time | field study | UNVERIFIED |
-| frozen-policy mechanism establishes SOC 2/FDA/ISO compliance or legal non-repudiation | broader operational/regulatory assessment | NOT CLAIMED |
+| mechanism establishes SOC 2/FDA/ISO compliance or legal non-repudiation | broader operational/regulatory assessment | NOT CLAIMED |
 
-## Semantic v3 truth boundary
+## Current hosted proof
+
+The current DWS-native v2 core proof is GitHub Actions run `33296171708`:
+
+- job `99216095769`;
+- trigger commit `0a0e3d1d9a38f2ebfe5a50712222741d4930f018`;
+- artifact `9727472871`;
+- artifact ZIP SHA-256 `fc7b7b9cfc2cee71912e59580f53ada8f03098b8532266f0cbf6507021f3bab2`;
+- Processor calls: `canonicalize=5`, `isolate_page=5`, `sign=1`;
+- Data Extraction calls: `5`.
+
+The harness reaches `sign_pdf()` only after all core assertions pass. It therefore proves the following before its optional signing failure:
+
+1. Processor OCR/flatten canonicalization;
+2. Data Extraction on canonical renditions;
+3. grounded field metadata;
+4. native page isolation and canonical page hashes;
+5. explicit `nutrient-processor-canonical-rendition/1` coordinate space;
+6. intentional cross-document mismatch;
+7. reviewed baseline `VERIFIED` state using a clearly labelled synthetic acceptance-harness review;
+8. non-material revision preserving targeted authority and remaining `VERIFIED`;
+9. material Shipment ID revision invalidating targeted authority and returning to `REVIEW_REQUIRED`.
+
+The synthetic harness review is not a customer/reviewer metric.
+
+## Optional signing boundary
+
+Run `33296171708` then reached Processor `/sign`, which returned HTTP 400.
+
+An isolated diagnostic avoided any further Data Extraction use and tested:
+
+`synthetic PDF -> Processor canonicalization -> Processor /sign`
+
+Run `33296422243`:
+
+- Processor normalization: PASS;
+- canonical PDF SHA-256: `30a967bcacfa8b84af573d530a8d6d77292579adf87fbd9380aafa4e77d3af83`;
+- `/sign`: `FAIL_HTTP_400`;
+- artifact `9727544255`;
+- artifact ZIP SHA-256 `9e6f0d73e0707d826e300dadbc2b02fbf7527c7a229b73998143493ac7e17058`.
+
+Therefore signing remains an independent provider/account/service limitation. No more signing calls should be made without a specific Nutrient correction or entitlement explanation.
+
+## Semantic truth boundary
 
 ReleaseProof separates three questions:
 
-1. **Integrity:** are these exact document/page/provider artifacts untampered? Cryptographic hashes and provider receipts answer this.
-2. **Review identity:** is this still the same business evidence a human reviewed? A deterministic semantic key answers this: logical document, page, field path, normalized value, and bounding box within an explicit tolerance.
-3. **Authority semantics:** under which comparison rules was the human decision allowed to continue after evidence changed? The `EvidenceEquivalencePolicy` frozen inside the review answers this.
+1. **Integrity:** are exact document/page/provider artifacts untampered? Hashes and provider receipts answer this.
+2. **Review identity:** is this still the same business evidence? The deterministic key is logical document, page, field path, normalized value, bbox within historical tolerance, and coordinate space.
+3. **Authority semantics:** under which comparison rules may historical human authority continue? The `EvidenceEquivalencePolicy` frozen inside the review answers this.
 
-Confidence remains a review-routing/admissibility signal and is intentionally not part of semantic evidence identity.
+Confidence remains a review-routing/admissibility signal and is intentionally not semantic identity.
 
-The old manifest never becomes current after a source revision. Differential Reverification always mints a new current manifest and carries forward only still-grounded human authority evaluated under the policy stored in that historical review.
+A source revision always mints a new current manifest. Only still-grounded authority can carry forward under the exact policy stored with the historical review.
 
-## Frozen policy and AuthorityBinding
+## Historical chronology
 
-New semantic reviews store:
+The earlier Processor-only accepted proof remains run `32215337912`, artifact `9352133498`, digest `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`.
 
-- policy version `evidence-equivalence/1`;
-- bbox tolerance;
-- normalization version `nfkc-whitespace/1`;
-- bbox metric `axis-absolute/1`.
+Later historical attempts encountered:
 
-`authority_binding` commits to the finding, exact finding binding, reviewer decision, reviewer identity, rationale, evidence identities, and frozen equivalence policy. The binding is explicitly included in the serialized review payload inside each current release manifest.
+- HTTP 402 quota exhaustion;
+- v2 run `33295050008`: Processor PASS, Data Extraction HTTP 403 because the Processor credential was mistakenly used for the separate Data Extraction product;
+- v2 run `33295993491`: separate credential accepted, Data Extraction HTTP 400 because the acceptance schema contained the unsupported `additionalProperties` keyword.
 
-A later runtime cannot change the meaning of an old review by changing its bbox default. Unsupported policy versions fail closed. Legacy reviews without policy remain exact-binding only; ReleaseProof does not infer a historical tolerance that was never recorded.
+Those failures are retained as chronology. They are not the current hosted-v2 state.
 
-See `docs/frozen-authority-policy.md`.
+## Production evidence
 
-## Canonical hosted evidence
+The last accepted Vercel deployment predates the new v2 hosted result. Until redeployed, production is **STALE** with respect to the new status fields.
 
-The competition-critical hosted proof remains GitHub Actions run `32215337912` at commit `d885ed31ebb8cc9449c450b0334c630c3b11f656`, artifact `9352133498`, digest `sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e`.
+Target production endpoints after redeploy:
 
-That run used the historical Processor `json-content` path. It is not relabelled as Data Extraction API acceptance.
+- `/`
+- `/health`
+- `/api/live-evidence` - backward-compatible historical receipt
+- `/api/v2-evidence` - current v2 hosted evidence
+- `/api/demo`
+- `/api/evaluation`
 
-The later quota-aware Differential Reverification harness passed public CI (`32215419913`) but hosted run `32215515505` received HTTP `402` on the first `/build`. Further calls were stopped. This remains a non-blocking quota limitation, not converted into PASS or mechanism failure.
+## Compliance and IP boundaries
 
-## DWS-native hosted status
+Frozen policy, deterministic replay and tamper-evident hashes support auditability but do not by themselves establish legal non-repudiation or regulatory compliance/certification.
 
-The following paths are implemented and contract-tested but remain **UNRUN** with hosted credentials:
-
-- Processor OCR/flatten canonicalization;
-- Processor page isolation for canonical page hashes;
-- Data Extraction `/extraction/extract`;
-- DWS Viewer review flow;
-- Processor `/sign`.
-
-No hosted PASS is claimed for these paths until a real acceptance run succeeds.
-
-## Public production evidence
-
-Current accepted Vercel project: `evidencebound-releaseproof-dws` (`prj_zYwz9jdjY3PmbpoYFWUraPkLUPET`).
-
-Current accepted refactored production deployment:
-
-- deployment id: `dpl_7zdyqLmgv4PEyHxUPJkP6Dp3gDhn`;
-- immutable URL: `https://evidencebound-releaseproof-9un6wo3iu.vercel.app`;
-- production alias: `https://evidencebound-releaseproof-dws.vercel.app`;
-- deployed commit: `bd670240a681ad139921597ba10b534a570c07f4`;
-- deployment state: `READY`;
-- `/`, `/health`, `/api/demo`, `/api/evaluation`, `/api/live-evidence`: HTTP 200 PASS;
-- runtime error clusters on accepted judge paths during acceptance: none observed.
-
-The root judge surface visibly contains the Frozen Authority Policy and DWS-native v2 truth boundary, confirming that this is the refactored revision rather than the previous production artifact.
-
-See `docs/production-acceptance-2026-08-24.md`.
-
-## Compliance claim boundary
-
-Frozen policy, deterministic replay and tamper-evident hashes are useful controls for auditability. They do not by themselves establish legal non-repudiation or compliance/certification under SOC 2, FDA 21 CFR Part 11, ISO or another regulatory framework. Identity assurance, qualified signatures where required, access controls, retention, validation, operational controls and independent audits remain outside this mechanism.
-
-## Merge gate
-
-Do not merge on the basis of an older green run alone. The current PR head must have a fully green GitHub Actions matrix before merge.
-
-## IP / prior-art boundary
-
-ReleaseProof does not claim invention of provenance graphs, version-aware approvals, dependency invalidation, ontologies, or knowledge graphs. It does not copy OntoGuard ontology schemas, proprietary algorithms, policy language, implementation details, or product claims.
-
-The independently developed ReleaseProof contribution is the DWS-grounded semantic review-continuity and selective invalidation mechanism. EvidenceBound Core transfer candidates are limited to generic typed evidence identity, frozen authority policy/binding, explicit dependency edges, deterministic equivalence, and blast-radius semantics.
+ReleaseProof does not claim invention of provenance graphs, version-aware approvals, dependency invalidation, ontologies, or knowledge graphs. It does not copy proprietary OntoGuard schemas, algorithms, policy language or implementation details. The independently developed contribution is DWS-grounded semantic review continuity with frozen historical authority and selective invalidation.
