@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from releaseproof.public_app import CANONICAL_LIVE_EVIDENCE, app
+from releaseproof.public_app import CANONICAL_LIVE_EVIDENCE, V2_HOSTED_EVIDENCE, app
 
 
 def test_public_health_exposes_accepted_live_truth_without_overclaiming():
@@ -10,12 +10,16 @@ def test_public_health_exposes_accepted_live_truth_without_overclaiming():
     assert data['controlled_kernel'] == 'PASS'
     assert data['public_ci'] == 'PASS'
     assert data['live_dws_core'] == 'PASS'
-    assert data['live_differential_reverification'] == 'BLOCKED_QUOTA_402'
+    assert data['dws_native_v2_core_hosted'] == 'PASS'
+    assert data['live_differential_reverification'] == 'PASS_HOSTED'
+    assert data['dws_native_v2_signing'] == 'FAIL_HTTP_400'
+    assert data['dws_native_v2_viewer'] == 'UNRUN'
     assert data['canonical_live_run'] == 32215337912
-    assert data['runtime_live_calls'] == 'DISABLED_TO_PRESERVE_EXHAUSTED_QUOTA'
+    assert data['dws_native_v2_run'] == 33296171708
+    assert data['runtime_live_calls'] == 'DISABLED_AFTER_ACCEPTANCE'
 
 
-def test_public_live_evidence_is_static_sanitized_receipt_not_provider_call():
+def test_public_live_evidence_preserves_historical_static_receipt_contract():
     client = TestClient(app)
     data = client.get('/api/live-evidence').json()
     assert data == CANONICAL_LIVE_EVIDENCE
@@ -27,15 +31,31 @@ def test_public_live_evidence_is_static_sanitized_receipt_not_provider_call():
     assert set(data['dws_receipts']) == {'invoice', 'shipping', 'certificate'}
 
 
+def test_public_v2_evidence_is_static_sanitized_receipt_not_provider_call():
+    client = TestClient(app)
+    data = client.get('/api/v2-evidence').json()
+    assert data == V2_HOSTED_EVIDENCE
+    assert data['status'] == 'PASS'
+    assert data['run_id'] == 33296171708
+    assert data['processor_canonicalization'] == 'PASS'
+    assert data['data_extraction'] == 'PASS'
+    assert data['canonical_page_hashes'] == 'PASS'
+    assert data['nonmaterial_review_preservation'] == 'PASS'
+    assert data['material_review_invalidation'] == 'PASS'
+    assert data['signing'] == 'FAIL_HTTP_400'
+    assert data['viewer_review_flow'] == 'UNRUN'
+
+
 def test_public_judge_surface_matches_claims_ledger_truth():
     client = TestClient(app)
     html = client.get('/').text
     assert 'HOSTED NUTRIENT DWS · PASS' in html
-    assert 'HOSTED DIFFERENTIAL · QUOTA BLOCKED' in html
+    assert 'DWS-NATIVE V2 CORE · HOSTED PASS' in html
+    assert 'SIGNING · HTTP 400' in html
     assert 'Run controlled mechanism' in html
-    assert '32215337912' in html
-    assert 'HTTP 402' in html
+    assert '33296171708' in html
     assert 'LIVE NUTRIENT DWS UNVERIFIED' not in html
+    assert 'HOSTED DIFFERENTIAL · QUOTA BLOCKED' not in html
 
 
 def test_public_surface_describes_semantic_identity_not_confidence_binding():
