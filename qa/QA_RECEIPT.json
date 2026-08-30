@@ -1,47 +1,46 @@
 {
   "snapshot_date": "2026-08-30",
   "submission_readiness": "READY_WITH_OPTIONAL_SIGNING_LIMITATION",
-  "evidence_class": "controlled semantic authority mechanism + public GitHub CI + historical hosted Nutrient Processor acceptance + hosted DWS-native v2 core acceptance + refactored Vercel evidence surface",
+  "evidence_class": "controlled semantic authority mechanism + public CI + historical hosted Processor evidence + hosted DWS-native v2 core evidence + current Vercel production acceptance",
   "checks": {
     "semantic_evidence_identity": "PASS",
     "stable_logical_finding_identity": "PASS",
     "frozen_equivalence_policy": "PASS",
     "authority_binding": "PASS",
-    "authority_binding_serialized_in_manifest": "PASS",
     "runtime_policy_drift_blocked": "PASS",
     "unknown_policy_version_fail_closed": "PASS",
     "legacy_review_exact_binding_only": "PASS",
     "bbox_tolerance_reverification": "PASS",
-    "confidence_only_drift_not_semantic_identity": "PASS",
-    "material_value_change_invalidates_review": "PASS",
-    "page_level_blast_radius": "PASS",
     "coordinate_space_provenance": "PASS",
+    "confidence_only_drift_not_semantic_identity": "PASS",
+    "page_level_blast_radius": "PASS",
     "retained_controlled_result_parity": "PASS",
     "retained_evaluation_result_parity": "PASS",
     "processor_canonicalize_v2": "PASS_HOSTED_RUN_33296171708",
     "processor_page_isolation_v2": "PASS_HOSTED_RUN_33296171708",
     "data_extraction_v2": "PASS_HOSTED_RUN_33296171708",
-    "data_extraction_grounding_normalizer": "PASS_HOSTED_RUN_33296171708",
     "canonical_page_hashes_v2": "PASS_HOSTED_RUN_33296171708",
     "hosted_nonmaterial_authority_preservation": "PASS_RUN_33296171708",
     "hosted_material_authority_invalidation": "PASS_RUN_33296171708",
     "hosted_differential_reverification": "PASS_RUN_33296171708",
     "processor_sign": "FAIL_HTTP_400_RUN_33296171708_REPRODUCED_RUN_33296422243",
     "viewer_review_projection": "PASS_PROJECTION_TEST_HOSTED_UNRUN",
+    "viewer_hosted_review_flow": "UNRUN",
     "nutrient_studio_schema_generation": "UNRUN_EXTERNAL_PRODUCT_STEP",
-    "hosted_v2_dual_product_key_preflight": "PASS",
-    "data_extraction_supported_schema_contract": "PASS",
     "vercel_root_entrypoint_contract": "PASS",
-    "compileall": "PASS",
     "controlled_demo": "PASS",
     "controlled_evaluation": "PASS",
-    "local_http_judge_path": "PASS",
-    "missing_nutrient_key_fail_closed": "PASS",
-    "cross_document_review_replay_blocked": "PASS",
     "historical_live_nutrient_dws_core": "PASS_RUN_32215337912",
     "public_github_repo": "PASS",
-    "public_vercel_project": "PASS",
-    "refactor_production_acceptance": "PASS_HISTORICAL_SURFACE_REDEPLOY_REQUIRED_FOR_NEW_V2_STATUS",
+    "public_github_ci_pr23": "PASS_RUN_33296807838_PYTHON_3_11_3_12_3_13",
+    "current_vercel_production": "PASS_DEPLOYMENT_dpl_8yEDRk4Bwz2meH2vwSzuZTY5UNaM",
+    "public_vercel_root": "PASS_HTTP_200",
+    "public_vercel_health": "PASS_HTTP_200",
+    "public_vercel_v2_evidence": "PASS_HTTP_200",
+    "public_vercel_live_evidence": "PASS_HTTP_200",
+    "public_vercel_demo": "PASS_HTTP_200",
+    "public_vercel_evaluation": "PASS_HTTP_200",
+    "public_vercel_runtime_errors": "PASS_NONE_OBSERVED_ON_ACCEPTED_PATHS",
     "regulatory_compliance_or_certification": "NOT_CLAIMED",
     "legal_non_repudiation": "NOT_CLAIMED",
     "real_reviewer_time_savings": "UNVERIFIED",
@@ -51,10 +50,7 @@
     "bandit": "UNRUN",
     "pip_audit": "UNRUN"
   },
-  "refactor_evidence": {
-    "design_spec": "docs/superpowers/specs/2026-08-24-dws-native-semantic-reverification-design.md",
-    "implementation_plan": "docs/superpowers/plans/2026-08-24-dws-native-semantic-reverification.md",
-    "frozen_authority_design": "docs/frozen-authority-policy.md",
+  "semantic_authority": {
     "semantic_key": [
       "document_id",
       "page",
@@ -70,39 +66,13 @@
       "bbox_metric": "axis-absolute/1"
     },
     "coordinate_space": "nutrient-processor-canonical-rendition/1",
-    "confidence_role": "ADMISSIBILITY_AND_REVIEW_ROUTING_NOT_SEMANTIC_IDENTITY",
-    "integrity_role": "DOCUMENT_AND_PAGE_DIGESTS_PLUS_PROVIDER_RECEIPTS",
-    "releaseproof_owned_layer": [
-      "cross_document_reconciliation",
-      "stable_logical_findings",
-      "human_authority_binding",
-      "frozen_authority_policy",
-      "differential_reverification",
-      "selective_invalidation",
-      "approval_lifecycle"
-    ],
-    "nutrient_owned_or_target_native_layer": [
-      "processor_ocr_flatten_page_operations",
-      "data_extraction_source_grounding",
-      "studio_schema_workflow",
-      "viewer_annotations_comments_layers",
-      "processor_digital_signature"
-    ],
-    "semantic_refactor_merge_commit": "3584e577f62f65aec2f977028970c78d15e06c18",
-    "coordinate_space_hardening_merge_commit": "3cc71f51dab8d75f82022c11df6afafdda20fd9e",
-    "hosted_v2_harness_merge_commit": "32369d80ff4bd83e041d67b544b20c4753d3328b",
-    "data_extraction_credential_fix_merge_commit": "f5591c1ac86562682581d8a6327c5bcc4da3816f",
-    "data_extraction_schema_fix_merge_commit": "e200ec574f245881dfc5ebf1e6734cbbc737fa49",
-    "sign_probe_merge_commit": "b79b1eb69b5e9bed934b0f26e292cd95ee831557",
-    "python_lanes": ["3.11", "3.12", "3.13"]
+    "confidence_role": "ADMISSIBILITY_AND_REVIEW_ROUTING_NOT_SEMANTIC_IDENTITY"
   },
   "live_dws_evidence": {
     "historical_processor_core": {
+      "status": "PASS",
       "run_id": 32215337912,
-      "commit_sha": "d885ed31ebb8cc9449c450b0334c630c3b11f656",
       "artifact_id": 9352133498,
-      "artifact_digest": "sha256:485f9d1a72f4b4129944994949439ca3d14ff53202f6ab4ff7e20b88b5f6964e",
-      "manifest_sha256": "a5716cc3f5580a6dde1e21d4199675bb65f2b46e92b7b65a334f05a1d57663cc",
       "release_state": "REVIEW_REQUIRED",
       "review_trigger": "CROSS_DOCUMENT_MISMATCH"
     },
@@ -110,17 +80,8 @@
       "status": "PASS_HOSTED",
       "run_id": 33296171708,
       "job_id": 99216095769,
-      "trigger_commit": "0a0e3d1d9a38f2ebfe5a50712222741d4930f018",
       "artifact_id": 9727472871,
       "artifact_digest": "sha256:fc7b7b9cfc2cee71912e59580f53ada8f03098b8532266f0cbf6507021f3bab2",
-      "provider_calls": {
-        "processor": {
-          "canonicalize": 5,
-          "isolate_page": 5,
-          "sign": 1
-        },
-        "data_extraction": 5
-      },
       "processor_canonicalization": "PASS",
       "data_extraction": "PASS",
       "canonical_page_isolation": "PASS",
@@ -132,41 +93,39 @@
     },
     "isolated_sign_probe": {
       "run_id": 33296422243,
-      "job_id": 99216757835,
       "artifact_id": 9727544255,
-      "artifact_digest": "sha256:9e6f0d73e0707d826e300dadbc2b02fbf7527c7a229b73998143493ac7e17058",
       "processor_normalization": "PASS",
-      "canonical_pdf_sha256": "30a967bcacfa8b84af573d530a8d6d77292579adf87fbd9380aafa4e77d3af83",
       "signing": "FAIL_HTTP_400"
     }
-  },
-  "v2_hosted_status": {
-    "processor_ocr_flatten": "PASS_HOSTED",
-    "processor_page_isolation": "PASS_HOSTED",
-    "data_extraction": "PASS_HOSTED",
-    "canonical_page_hashes": "PASS_HOSTED",
-    "differential_reverification": "PASS_HOSTED",
-    "nonmaterial_authority_preservation": "PASS_HOSTED",
-    "material_authority_invalidation": "PASS_HOSTED",
-    "processor_sign": "FAIL_HTTP_400",
-    "viewer_review_flow": "UNRUN"
   },
   "production_evidence": {
     "provider": "Vercel",
     "project_name": "evidencebound-releaseproof-dws",
     "project_id": "prj_zYwz9jdjY3PmbpoYFWUraPkLUPET",
+    "team_id": "team_ecsLjL6dYpwD2SVOcXJfta5Q",
     "production_url": "https://evidencebound-releaseproof-dws.vercel.app",
-    "last_accepted_deployment_id": "dpl_7zdyqLmgv4PEyHxUPJkP6Dp3gDhn",
-    "last_accepted_commit_sha": "bd670240a681ad139921597ba10b534a570c07f4",
-    "current_v2_status_surface": "STALE_UNTIL_REDEPLOY_AFTER_THIS_EVIDENCE_UPDATE",
-    "runtime_nutrient_calls": "DISABLED"
+    "accepted_deployment_id": "dpl_8yEDRk4Bwz2meH2vwSzuZTY5UNaM",
+    "immutable_deployment_url": "https://evidencebound-releaseproof-lj87ka83w.vercel.app",
+    "accepted_commit_sha": "77bda0ba7c15a79ad0c9e6b2e26931c206528504",
+    "deployment_state": "READY",
+    "accepted_endpoints": [
+      "/",
+      "/health",
+      "/api/v2-evidence",
+      "/api/live-evidence",
+      "/api/demo",
+      "/api/evaluation"
+    ],
+    "runtime_errors_on_acceptance_paths": "NONE_OBSERVED",
+    "runtime_nutrient_calls": "DISABLED",
+    "acceptance_document": "docs/production-acceptance-2026-08-30.md"
   },
   "limits": [
-    "The accepted hosted v2 run uses synthetic documents and a clearly labelled synthetic acceptance-harness review, not a real customer approval.",
-    "DWS-native v2 core is PASS_HOSTED, but Processor digital signing returned HTTP 400 and is not claimed as PASS.",
-    "Viewer projection is tested, but hosted Viewer review execution remains UNRUN.",
-    "Frozen equivalence policy supports deterministic replay but is not by itself regulatory compliance, certification, or legal non-repudiation.",
-    "No real reviewer-time savings, customer adoption, regulatory certification, or market-size measurement is claimed.",
-    "The Vercel evidence surface must be redeployed before the new hosted-v2 status is production-visible."
+    "The accepted hosted v2 run uses synthetic documents and a synthetic acceptance-harness review, not a real customer approval.",
+    "Processor digital signing returned HTTP 400 and is not claimed as PASS.",
+    "Hosted Viewer review execution remains UNRUN.",
+    "Nutrient Studio schema generation remains UNRUN and is not claimed.",
+    "Frozen equivalence policy supports deterministic replay but is not regulatory compliance, certification, or legal non-repudiation.",
+    "No real reviewer-time savings, customer adoption, or market-size measurement is claimed."
   ]
 }
