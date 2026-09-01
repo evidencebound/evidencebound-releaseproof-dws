@@ -179,3 +179,30 @@ def test_signing_adapter_uses_processor_sign_endpoint(monkeypatch):
     assert signed.startswith(b"%PDF-signed")
     assert captured["endpoint"] == "https://api.nutrient.io/sign"
     assert captured["filename"] == "release.pdf"
+
+
+def test_signing_adapter_exposes_only_sanitized_provider_diagnostics(monkeypatch):
+    class Response:
+        status_code = 400
+        content = b'{"details":"invalid file","requestId":"req-123","failingPaths":["file"],"authorization":"Bearer should-not-leak"}'
+
+        def json(self):
+            return {
+                "details": "invalid file",
+                "requestId": "req-123",
+                "failingPaths": ["file"],
+                "authorization": "Bearer should-not-leak",
+            }
+
+    def fake_post(endpoint, headers, files, timeout):
+        return Response()
+
+    monkeypatch.setattr("releaseproof.dws.requests.post", fake_post)
+    with pytest.raises(DwsError, match="DWS signing returned HTTP 400") as exc_info:
+        NutrientDwsTransport("test-key").sign_pdf(b"%PDF-release\n%%EOF")
+
+    assert exc_info.value.diagnostics == {
+        "details": "invalid file",
+        "requestId": "req-123",
+        "failingPaths": ["file"],
+    }
