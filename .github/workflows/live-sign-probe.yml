@@ -41,7 +41,8 @@ jobs:
           set +e
           PYTHONPATH=src python scripts/run_live_sign_probe.py \
             --receipt live-sign-probe-receipt.json \
-            --signed-output live-sign-probe-signed.pdf
+            --signed-output live-sign-probe-signed.pdf \
+            --canonical-output live-sign-probe-canonical.pdf
           status=$?
           set -e
           echo "exit_code=$status" >> "$GITHUB_OUTPUT"
@@ -54,6 +55,7 @@ jobs:
           name: live-sign-probe
           path: |
             live-sign-probe-receipt.json
+            live-sign-probe-canonical.pdf
             live-sign-probe-signed.pdf
           if-no-files-found: warn
           retention-days: 30

@@ -12,6 +12,8 @@ import json
 import os
 from pathlib import Path
 
+import requests
+
 from generate_synthetic_trade_pdfs import _pdf_bytes
 from releaseproof.dws import DwsError, NutrientDwsTransport
 
@@ -29,7 +31,40 @@ def _status_from_error(exc: DwsError) -> str:
     return "FAIL"
 
 
-def run(output_pdf: Path) -> dict[str, object]:
+def _sanitize_provider_error(response) -> dict[str, object]:
+    try:
+        payload = response.json()
+    except ValueError:
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    return {
+        key: payload[key]
+        for key in ("details", "requestId", "failingPaths")
+        if key in payload
+    }
+
+
+def _sign_with_diagnostics(
+    transport: NutrientDwsTransport,
+    pdf_bytes: bytes,
+    *,
+    filename: str,
+) -> tuple[bytes | None, int, dict[str, object]]:
+    response = requests.post(
+        transport.sign_endpoint,
+        headers={"Authorization": f"Bearer {transport.api_key}"},
+        files={"file": (filename, pdf_bytes, "application/pdf")},
+        timeout=transport.timeout_seconds,
+    )
+    if response.status_code >= 400:
+        return None, response.status_code, _sanitize_provider_error(response)
+    if not response.content.startswith(b"%PDF-"):
+        raise DwsError("DWS signing response was not a PDF")
+    return response.content, response.status_code, {}
+
+
+def run(output_pdf: Path, canonical_output: Path) -> dict[str, object]:
     key = os.environ.get("NUTRIENT_API_KEY")
     if not key:
         raise RuntimeError("NUTRIENT_API_KEY is required")
@@ -57,16 +92,22 @@ def run(output_pdf: Path) -> dict[str, object]:
     canonical = transport.canonicalize_pdf(source)
     receipt["provider_calls"]["canonicalize"] = 1  # type: ignore[index]
     receipt["processor_normalization"] = "PASS"
+    canonical_output.write_bytes(canonical)
     receipt["canonical_pdf_sha256"] = _sha(canonical)
     receipt["canonical_pdf_bytes"] = len(canonical)
 
     receipt["provider_calls"]["sign"] = 1  # type: ignore[index]
-    try:
-        signed = transport.sign_pdf(canonical, filename="releaseproof-sign-probe.pdf")
-    except DwsError as exc:
-        receipt["signing"] = _status_from_error(exc)
-        receipt["error_type"] = type(exc).__name__
-        receipt["error"] = str(exc)
+    signed, status_code, provider_error = _sign_with_diagnostics(
+        transport,
+        canonical,
+        filename="releaseproof-sign-probe.pdf",
+    )
+    if signed is None:
+        receipt["signing"] = f"FAIL_HTTP_{status_code}"
+        receipt["error_type"] = "DwsError"
+        receipt["error"] = f"DWS signing returned HTTP {status_code}"
+        if provider_error:
+            receipt["provider_error"] = provider_error
         return receipt
 
     output_pdf.write_bytes(signed)
@@ -80,10 +121,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--receipt", type=Path, default=Path("live-sign-probe-receipt.json"))
     parser.add_argument("--signed-output", type=Path, default=Path("live-sign-probe-signed.pdf"))
+    parser.add_argument("--canonical-output", type=Path, default=Path("live-sign-probe-canonical.pdf"))
     args = parser.parse_args()
 
     try:
-        receipt = run(args.signed_output)
+        receipt = run(args.signed_output, args.canonical_output)
     except Exception as exc:
         receipt = {
             "execution": "LIVE_NUTRIENT_SIGN_PROBE",
